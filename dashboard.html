@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){
+    var lang = localStorage.getItem("moto_lang") || "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    var savedTheme = localStorage.getItem("moto_theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", savedTheme || (prefersDark ? "dark" : "light"));
+    
+    var user = localStorage.getItem("moto_user");
+    if(!user){
+      window.location.replace("login.html?next=dashboard.html");
+    }
+  })();
+</script>
+<title>Dashboard — Bike.X</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body data-title-key="dashboardTitle">
+<div id="pageLoader">
+  <div class="loader-mark">BIKE<span class="dot">.X</span></div>
+</div>
+
+
+<header class="site-header">
+  <div class="header-row">
+    <a href="index.html" class="logo">
+      <span class="site-logo-badge"><img src="img/logo.png" alt="Bike.X" class="site-logo-img"></span>
+      <span class="tagline" data-i18n="tagline">motorcycles only</span>
+    </a>
+    
+    <div class="header-actions">
+      <a href="index.html" class="btn" id="backToListingsBtn" data-i18n="backToListings">← Back to listings</a>
+      <div class="auth-area" id="authArea"></div>
+      <button class="btn lang-switch" id="langSwitch">العربية</button>
+      <button class="theme-switch" id="themeSwitch" data-i18n-aria="themeAria" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+      </button>
+      <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<div class="mobile-menu-overlay" id="mobileMenuOverlay">
+  <div class="mobile-menu-content">
+    <div class="mobile-menu-header">
+      <span class="mobile-menu-logo site-logo-badge"><img src="img/logo.png" alt="Bike.X" class="site-logo-img"></span>
+      <button class="mobile-menu-close" id="mobileMenuClose">×</button>
+    </div>
+    
+    <div class="mobile-search">
+      <div class="mobile-search-wrapper">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="mobileSearchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search brand, model or city…" aria-label="Search listings">
+        <button type="submit" id="mobileSearchBtn" data-i18n="searchBtn">Search</button>
+      </div>
+    </div>
+    
+    <nav class="mobile-nav">
+      <a href="index.html" class="mobile-nav-link" data-i18n="home">🏠 Home</a>
+      <a href="about.html" class="mobile-nav-link" data-i18n="about">ℹ️ About</a>
+      <a href="contact.html" class="mobile-nav-link" data-i18n="contact">📧 Contact</a>
+      <div class="mobile-divider"></div>
+      <a href="sell.html" class="mobile-nav-link btn-solid" data-i18n="sellBtn">+ Sell</a>
+      <div class="mobile-divider"></div>
+      <div id="mobileNavAuth" class="mobile-nav-auth"></div>
+    </nav>
+    
+    <div class="mobile-auth-section" id="mobileAuth"></div>
+    
+    <div class="mobile-menu-footer">
+      <button class="btn lang-switch" id="mobileLangSwitch">العربية</button>
+      <button class="theme-switch" id="mobileThemeSwitch" data-i18n-aria="themeAria" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard-container">
+  <div class="dashboard-sidebar">
+    <div class="user-profile-card">
+      <div class="user-avatar-wrapper" id="avatarWrapper">
+        <div class="user-avatar" id="userAvatar">
+          <span id="avatarInitials">👤</span>
+        </div>
+        <button class="avatar-upload-btn" id="avatarUploadBtn" title="Change profile picture">
+          <span>📷</span>
+        </button>
+        <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+      </div>
+      <h3 id="userName">User Name</h3>
+      <p id="userEmail">user@email.com</p>
+      <span class="user-role" id="userRole">User</span>
+    </div>
+    <nav class="dashboard-nav">
+      <button class="nav-btn active" data-tab="listings">
+        <span>📋</span> <span data-i18n="myListings">My Listings</span>
+      </button>
+      <button class="nav-btn" data-tab="messages">
+        <span>💬</span> <span data-i18n="messages">Messages</span>
+      </button>
+      <button class="nav-btn" data-tab="settings">
+        <span>⚙️</span> <span data-i18n="accountSettings">Account Settings</span>
+      </button>
+      <button class="nav-btn admin-only" data-tab="admin" style="display:none;">
+        <span>🛡️</span> <span data-i18n="adminPanel">Admin Panel</span>
+      </button>
+      <button class="nav-btn" id="logoutBtn">
+        <span>🚪</span> <span data-i18n="logoutBtn">Logout</span>
+      </button>
+    </nav>
+  </div>
+
+  <div class="dashboard-content">
+    <div class="tab-content active" id="tab-listings">
+      <div class="tab-header">
+        <h2 data-i18n="myListings">My Listings</h2>
+        <a href="sell.html" class="btn btn-solid btn-add-listing">+ <span data-i18n="addNewListing">Add New Listing</span></a>
+      </div>
+      <div id="userListings" class="listings-grid"></div>
+    </div>
+
+    <div class="tab-content" id="tab-messages">
+      <div class="tab-header">
+        <h2><i class="fas fa-comments" style="color:var(--accent);"></i> <span data-i18n="messages">Messages</span></h2>
+        <span class="btn" style="background:var(--surface-2); border-color:var(--border); cursor:default;" id="messagesCountBadge">0 conversations</span>
+      </div>
+      <div id="dashboardMessages" class="dashboard-messages-list"></div>
+    </div>
+
+    <div class="tab-content" id="tab-settings">
+      <h2 data-i18n="accountSettings">Account Settings</h2>
+      <form id="settingsForm" class="settings-form">
+        <div class="form-row">
+          <div class="field">
+            <label for="settingsName" data-i18n="labelFullName">Full Name</label>
+            <input type="text" id="settingsName" required>
+          </div>
+          <div class="field">
+            <label for="settingsPhone" data-i18n="labelPhone">Phone Number</label>
+            <input type="tel" id="settingsPhone" placeholder="+966 5X XXX XXXX">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="settingsEmail" data-i18n="labelEmail">Email</label>
+            <input type="email" id="settingsEmail" disabled>
+            <span class="field-hint" data-i18n="emailCannotChange">Email cannot be changed</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label for="settingsPassword" data-i18n="newPassword">New Password</label>
+            <input type="password" id="settingsPassword" placeholder="Leave blank to keep current">
+          </div>
+          <div class="field">
+            <label for="settingsConfirmPassword" data-i18n="confirmNewPassword">Confirm New Password</label>
+            <input type="password" id="settingsConfirmPassword" placeholder="Confirm new password">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-solid btn-save-settings" data-i18n="saveChanges">Save Changes</button>
+        </div>
+        <div id="settingsMessage" class="settings-message"></div>
+      </form>
+    </div>
+
+    <div class="tab-content" id="tab-admin">
+      <h2 data-i18n="adminPanel">Admin Panel</h2>
+      <div class="admin-stats">
+        <div class="stat-card">
+          <span class="stat-number" id="totalListings">0</span>
+          <span class="stat-label" data-i18n="totalListings">Total Listings</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="totalUsers">0</span>
+          <span class="stat-label" data-i18n="totalUsers">Total Users</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="totalAdmins">0</span>
+          <span class="stat-label" data-i18n="totalAdmins">Admins</span>
+        </div>
+      </div>
+      <div class="admin-section">
+        <h3 data-i18n="allListings">All Listings</h3>
+        <div id="adminListings" class="listings-grid"></div>
+      </div>
+      <div class="admin-section">
+        <h3 data-i18n="allUsers">All Users</h3>
+        <div id="adminUsers" class="users-table-wrapper">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th data-i18n="name">Name</th>
+                <th data-i18n="email">Email</th>
+                <th data-i18n="phone">Phone</th>
+                <th data-i18n="role">Role</th>
+                <th data-i18n="actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-links">
+      <a href="index.html" data-i18n="home">Home</a>
+      <a href="about.html" data-i18n="about">About</a>
+      <a href="contact.html" data-i18n="contact">Contact</a>
+    </div>
+    <p data-i18n="footerText">Bike.X — a motorcycle-only classifieds concept inspired by Haraj. Demo data only, stored in your browser.</p>
+  </div>
+</footer>
+
+<!-- ===== CUSTOM MODAL (Enhanced with Cancel Button) ===== -->
+<div class="modal-overlay-custom" id="customModal">
+  <div class="modal-custom">
+    <div class="modal-custom-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+    </div>
+    <div class="modal-custom-content">
+      <h3 id="modalTitle">Warning</h3>
+      <p id="modalMessage">Something went wrong.</p>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:16px; width:100%;">
+      <button class="btn btn-solid modal-custom-btn" id="modalOkBtn" style="flex:1;">OK</button>
+      <button class="btn modal-custom-btn" id="modalCancelBtn" style="flex:1; background:var(--surface-2); border-color:var(--border);">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/services/dataService.js"></script>
+<script src="js/app.js"></script>
+<script src="js/dashboard.js"></script>
+<script>
+  function initTheme(){
+    const saved = localStorage.getItem("moto_theme");
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+    if (typeof applyThemeLogo === "function") applyThemeLogo();
+  }
+  function toggleTheme(){
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("moto_theme", next);
+    if (typeof applyThemeLogo === "function") applyThemeLogo();
+  }
+  initTheme();
+  document.getElementById("themeSwitch").addEventListener("click", toggleTheme);
+  document.addEventListener("DOMContentLoaded", function() {
+    renderAuthArea();
+    setupMobileMenu();
+  });
+</script>
+</body>
+</html>

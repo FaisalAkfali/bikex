@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){
+    var lang = localStorage.getItem("moto_lang") || "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    var savedTheme = localStorage.getItem("moto_theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", savedTheme || (prefersDark ? "dark" : "light"));
+  })();
+</script>
+<title>Sign up — Bike.X</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body data-title-key="signupTitle">
+<div id="pageLoader">
+  <div class="loader-mark">BIKE<span class="dot">.X</span></div>
+</div>
+
+
+<header class="site-header">
+  <div class="header-row">
+    <a href="index.html" class="logo">
+      <span class="site-logo-badge"><img src="img/logo.png" alt="Bike.X" class="site-logo-img"></span>
+      <span class="tagline" data-i18n="tagline">motorcycles only</span>
+    </a>
+    
+    <div class="header-actions">
+      <a href="index.html" class="btn" id="backToListingsBtn" data-i18n="backToListings">← Back to listings</a>
+      <button class="btn lang-switch" id="langSwitch">العربية</button>
+      <button class="theme-switch" id="themeSwitch" data-i18n-aria="themeAria" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+      </button>
+      <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<div class="mobile-menu-overlay" id="mobileMenuOverlay">
+  <div class="mobile-menu-content">
+    <div class="mobile-menu-header">
+      <span class="mobile-menu-logo site-logo-badge"><img src="img/logo.png" alt="Bike.X" class="site-logo-img"></span>
+      <button class="mobile-menu-close" id="mobileMenuClose">×</button>
+    </div>
+    
+    <div class="mobile-search">
+      <div class="mobile-search-wrapper">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="mobileSearchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search brand, model or city…" aria-label="Search listings">
+        <button type="submit" id="mobileSearchBtn" data-i18n="searchBtn">Search</button>
+      </div>
+    </div>
+    
+    <nav class="mobile-nav">
+      <a href="index.html" class="mobile-nav-link" data-i18n="home">🏠 Home</a>
+      <a href="about.html" class="mobile-nav-link" data-i18n="about">ℹ️ About</a>
+      <a href="contact.html" class="mobile-nav-link" data-i18n="contact">📧 Contact</a>
+      <div class="mobile-divider"></div>
+      <a href="sell.html" class="mobile-nav-link btn-solid" data-i18n="sellBtn">+ Sell</a>
+      <div class="mobile-divider"></div>
+      <div id="mobileNavAuth" class="mobile-nav-auth"></div>
+    </nav>
+    
+    <div class="mobile-auth-section" id="mobileAuth"></div>
+    
+    <div class="mobile-menu-footer">
+      <button class="btn lang-switch" id="mobileLangSwitch">العربية</button>
+      <button class="theme-switch" id="mobileThemeSwitch" data-i18n-aria="themeAria" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="auth-page">
+  <h1 data-i18n="signupTitle">Create your account</h1>
+  <p class="auth-subtitle" data-i18n="signupSubtitle">Join Bike.X to post and manage your motorcycle listings.</p>
+
+  <div class="auth-card">
+    <div class="field-error" id="signupError"></div>
+    <form id="signupForm">
+      <div class="field">
+        <label for="name" data-i18n="labelFullName">Full name</label>
+        <input type="text" id="name" data-i18n-placeholder="placeholderFullName" placeholder="e.g. Abdullah Al-Saud" required>
+      </div>
+      <div class="field">
+        <label for="email" data-i18n="labelEmail">Email</label>
+        <input type="email" id="email" data-i18n-placeholder="placeholderEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label for="password" data-i18n="labelPassword">Password</label>
+        <input type="password" id="password" data-i18n-placeholder="placeholderPassword" placeholder="••••••••" required>
+      </div>
+      <div class="field">
+        <label for="confirmPassword" data-i18n="labelConfirmPassword">Confirm password</label>
+        <input type="password" id="confirmPassword" data-i18n-placeholder="placeholderPassword" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-solid btn-auth" data-i18n="signupBtn">Create account</button>
+    </form>
+    <div class="auth-switch">
+      <span data-i18n="haveAccountAlready">Already have an account?</span>
+      <a href="#" id="toLogin" data-i18n="loginLink">Log in</a>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-links">
+      <a href="index.html" data-i18n="home">Home</a>
+      <a href="about.html" data-i18n="about">About</a>
+      <a href="contact.html" data-i18n="contact">Contact</a>
+    </div>
+    <p data-i18n="footerText">Bike.X — a motorcycle-only classifieds concept inspired by Haraj. Demo data only, stored in your browser.</p>
+  </div>
+</footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/services/dataService.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  function initTheme(){
+    const saved = localStorage.getItem("moto_theme");
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+    if (typeof applyThemeLogo === "function") applyThemeLogo();
+  }
+  function toggleTheme(){
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("moto_theme", next);
+    if (typeof applyThemeLogo === "function") applyThemeLogo();
+  }
+  initTheme();
+  document.getElementById("themeSwitch").addEventListener("click", toggleTheme);
+
+  document.addEventListener("DOMContentLoaded", function() {
+    translateStaticPage();
+    setupMobileMenu();
+
+    const next = getNextParam();
+    document.getElementById("toLogin").href = "login.html?next=" + encodeURIComponent(next);
+
+    document.getElementById("signupForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirmPassword").value;
+      const errorBox = document.getElementById("signupError");
+
+      if(!name || !email || !password || !confirmPassword){
+        errorBox.textContent = t("signupErrorFields");
+        errorBox.classList.add("show");
+        return;
+      }
+      if(password !== confirmPassword){
+        errorBox.textContent = t("signupErrorMismatch");
+        errorBox.classList.add("show");
+        return;
+      }
+      if(findUserByEmail(email)){
+        errorBox.textContent = t("signupErrorExists");
+        errorBox.classList.add("show");
+        return;
+      }
+
+      errorBox.classList.remove("show");
+      const newUser = { name, email, password };
+      registerUser(newUser);
+      setSession(newUser);
+      window.location.href = next;
+    });
+  });
+</script>
+</body>
+</html>

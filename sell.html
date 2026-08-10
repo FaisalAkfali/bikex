@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+  (function(){
+    var lang = localStorage.getItem("moto_lang") || "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    var savedTheme = localStorage.getItem("moto_theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", savedTheme || (prefersDark ? "dark" : "light"));
+
+    var user = localStorage.getItem("moto_user");
+    if(!user){
+      window.location.replace("login.html?next=sell.html");
+    }
+  })();
+</script>
+<title>Sell — Bike.X</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body data-title-key="titleSell">
+<div id="pageLoader">
+  <div class="loader-mark">BIKE<span class="dot">.X</span></div>
+</div>
+
+
+<header class="site-header">
+  <div class="header-row">
+    <a href="index.html" class="logo">
+      <span class="site-logo-badge"><img src="img/logo.png" alt="Bike.X" class="site-logo-img"></span>
+      <span class="tagline" data-i18n="tagline">motorcycles only</span>
+    </a>
+    
+    <div class="header-actions">
+      <a href="index.html" class="btn" id="backToListingsBtn" data-i18n="backToListings">← Back to listings</a>
+      <div class="auth-area" id="authArea"></div>
+      <button class="btn lang-switch" id="langSwitch">العربية</button>
+      <button class="theme-switch" id="themeSwitch" data-i18n-aria="themeAria" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+      </button>
+      <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<div class="mobile-menu-overlay" id="mobileMenuOverlay">
+  <div class="mobile-menu-content">
+    <div class="mobile-menu-header">
+      <span class="mobile-menu-logo site-logo-badge"><img src="img/logo.png" alt="Bike.X" class="site-logo-img"></span>
+      <button class="mobile-menu-close" id="mobileMenuClose">×</button>
+    </div>
+    
+    <div class="mobile-search">
+      <div class="mobile-search-wrapper">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="mobileSearchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search brand, model or city…" aria-label="Search listings">
+        <button type="submit" id="mobileSearchBtn" data-i18n="searchBtn">Search</button>
+      </div>
+    </div>
+    
+    <nav class="mobile-nav">
+      <a href="index.html" class="mobile-nav-link" data-i18n="home">🏠 Home</a>
+      <a href="about.html" class="mobile-nav-link" data-i18n="about">ℹ️ About</a>
+      <a href="contact.html" class="mobile-nav-link" data-i18n="contact">📧 Contact</a>
+      <div class="mobile-divider"></div>
+      <a href="sell.html" class="mobile-nav-link btn-solid active" data-i18n="sellBtn">+ Sell</a>
+      <div class="mobile-divider"></div>
+      <div id="mobileNavAuth" class="mobile-nav-auth"></div>
+    </nav>
+    
+    <div class="mobile-auth-section" id="mobileAuth"></div>
+    
+    <div class="mobile-menu-footer">
+      <button class="btn lang-switch" id="mobileLangSwitch">العربية</button>
+      <button class="theme-switch" id="mobileThemeSwitch" data-i18n-aria="themeAria" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="form-page">
+  <h1 data-i18n="sellTitle" id="sellPageTitle">List your motorcycle</h1>
+  <p data-i18n="sellSubtitle" id="sellPageSubtitle">Fill in the details below. Your listing appears at the top of the homepage instantly — no account needed for this demo.</p>
+
+  <form class="form-card" id="sellForm">
+    <div class="form-row full">
+      <div class="field">
+        <label data-i18n="sellCategoryLabel">What are you selling?</label>
+        <div class="category-tabs" id="sellCategoryTabs">
+          <button type="button" class="category-tab active" data-category="motorcycles">
+            <span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="17" r="3"/><circle cx="19" cy="17" r="3"/><path d="M5 17h4l3-6h4l2 4h2"/><path d="M9 11l2-3h3"/></svg></span>
+            <span class="cat-label" data-i18n="catMotorcycles">Motorcycles</span>
+          </button>
+          <button type="button" class="category-tab" data-category="parts">
+            <span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></span>
+            <span class="cat-label" data-i18n="catParts">Parts</span>
+          </button>
+          <button type="button" class="category-tab" data-category="gear">
+            <span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14a9 9 0 0118 0v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z"/><path d="M5.5 8.5l-2 .3 1.2 1.8"/><circle cx="7" cy="14.5" r="1"/><path d="M9 10.5L18 8.3V14.8L9 16.8Z"/><path d="M14.7 9L14.3 15.6"/></svg></span>
+            <span class="cat-label" data-i18n="catGear">Gear &amp; Accessories</span>
+          </button>
+          <button type="button" class="category-tab" data-category="services">
+            <span class="cat-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6"/><path d="M9 17h6"/><path d="M9 9h1"/></svg></span>
+            <span class="cat-label" data-i18n="catServices">Services</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Motorcycle-specific fields -->
+    <div class="sell-fields" id="fieldsMotorcycle">
+      <div class="form-row">
+        <div class="field">
+          <label for="brand" data-i18n="labelBrand">Brand</label>
+          <select id="brand">
+            <option value="" disabled selected data-i18n="selectBrandDefault">Select brand</option>
+          </select>
+          <div id="brandOtherWrap" style="display:none; margin-top:8px;">
+            <label for="brandOtherInput" data-i18n="labelSpecifyBrand">Specify brand</label>
+            <input type="text" id="brandOtherInput" data-i18n-placeholder="placeholderSpecifyBrand" placeholder="e.g. Zongshen">
+          </div>
+        </div>
+        <div class="field">
+          <label for="model" data-i18n="labelModelOpt">Model (optional)</label>
+          <input type="text" id="model" data-i18n-placeholder="placeholderModel" placeholder="e.g. YZF-R1">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="year" data-i18n="labelYearOpt">Year (optional)</label>
+          <input type="number" id="year" min="1980" max="2026" data-i18n-placeholder="placeholderYear" placeholder="2023">
+        </div>
+        <div class="field">
+          <label for="cc" data-i18n="labelEngineCcOpt">Engine size (cc) (optional)</label>
+          <input type="number" id="cc" min="50" max="3000" data-i18n-placeholder="placeholderCc" placeholder="998">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="mileage" data-i18n="labelMileageKmOpt">Mileage (km) (optional)</label>
+          <input type="number" id="mileage" min="0" data-i18n-placeholder="placeholderMileage" placeholder="8000">
+        </div>
+        <div class="field">
+          <label for="color" data-i18n="labelColorOpt">Color (optional)</label>
+          <input type="text" id="color" data-i18n-placeholder="placeholderColor" placeholder="e.g. Matte Black">
+        </div>
+      </div>
+    </div>
+
+    <!-- Parts-specific fields -->
+    <div class="sell-fields" id="fieldsParts" style="display:none;">
+      <div class="form-row">
+        <div class="field">
+          <label for="partTitle" data-i18n="labelPartTitle">Part name</label>
+          <input type="text" id="partTitle" data-i18n-placeholder="placeholderPartTitle" placeholder="e.g. Akrapovic Slip-on Exhaust">
+        </div>
+        <div class="field">
+          <label for="partType" data-i18n="labelPartType">Type</label>
+          <select id="partType">
+            <option value="" disabled selected data-i18n="selectTypeDefault">Select type</option>
+            <option value="Exhaust" data-i18n="partTypeExhaust">Exhaust</option>
+            <option value="Brakes" data-i18n="partTypeBrakes">Brakes</option>
+            <option value="Drivetrain" data-i18n="partTypeDrivetrain">Drivetrain</option>
+            <option value="Electrical" data-i18n="partTypeElectrical">Electrical</option>
+            <option value="Bodywork" data-i18n="partTypeBodywork">Bodywork</option>
+            <option value="Luggage" data-i18n="partTypeLuggage">Luggage</option>
+            <option value="Tires & Wheels" data-i18n="partTypeTires">Tires &amp; Wheels</option>
+            <option value="Engine" data-i18n="partTypeEngine">Engine</option>
+            <option value="Suspension" data-i18n="partTypeSuspension">Suspension</option>
+            <option value="Other" data-i18n="partTypeOther">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="partBrand" data-i18n="labelPartBrand">Compatible brand (optional)</label>
+          <select id="partBrand">
+            <option value="" data-i18n="anyUniversal">Any / Universal</option>
+          </select>
+          <div id="partBrandOtherWrap" style="display:none; margin-top:8px;">
+            <label for="partBrandOtherInput" data-i18n="labelSpecifyBrand">Specify brand</label>
+            <input type="text" id="partBrandOtherInput" data-i18n-placeholder="placeholderSpecifyBrand" placeholder="e.g. Zongshen">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gear & Accessories-specific fields -->
+    <div class="sell-fields" id="fieldsGear" style="display:none;">
+      <div class="form-row">
+        <div class="field">
+          <label for="gearTitle" data-i18n="labelGearTitle">Item name</label>
+          <input type="text" id="gearTitle" data-i18n-placeholder="placeholderGearTitle" placeholder="e.g. Shoei RF-1400 Helmet">
+        </div>
+        <div class="field">
+          <label for="gearType" data-i18n="labelGearType">Type</label>
+          <select id="gearType">
+            <option value="" disabled selected data-i18n="selectTypeDefault">Select type</option>
+            <option value="Helmet" data-i18n="gearTypeHelmet">Helmet</option>
+            <option value="Jacket" data-i18n="gearTypeJacket">Jacket</option>
+            <option value="Gloves" data-i18n="gearTypeGloves">Gloves</option>
+            <option value="Boots" data-i18n="gearTypeBoots">Boots</option>
+            <option value="Tank Bag" data-i18n="gearTypeTankBag">Tank Bag</option>
+            <option value="Rain Suit" data-i18n="gearTypeRainSuit">Rain Suit</option>
+            <option value="Electronics" data-i18n="gearTypeElectronics">Electronics</option>
+            <option value="Other" data-i18n="partTypeOther">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="gearSize" data-i18n="labelGearSize">Size (optional)</label>
+          <input type="text" id="gearSize" data-i18n-placeholder="placeholderGearSize" placeholder="e.g. L, 43, One size">
+        </div>
+      </div>
+    </div>
+
+    <!-- Services-specific fields -->
+    <div class="sell-fields" id="fieldsServices" style="display:none;">
+      <div class="form-row">
+        <div class="field">
+          <label for="serviceType" data-i18n="labelServiceType">Service type</label>
+          <select id="serviceType">
+            <option value="" disabled selected data-i18n="selectTypeDefault">Select type</option>
+            <option value="سطحات" data-i18n="serviceTypeTowing">Towing / Flatbed Recovery</option>
+            <option value="مكاتب التأمين / نقل ملكية" data-i18n="serviceTypeInsuranceTransfer">Insurance &amp; Ownership Transfer Offices</option>
+            <option value="الغسيل المتنقل" data-i18n="serviceTypeMobileWash">Mobile Washing</option>
+            <option value="مواقف" data-i18n="serviceTypeParking">Parking</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shared fields (all categories) -->
+    <div class="form-row">
+      <div class="field">
+        <label for="price" data-i18n="labelPriceSar">Price (SAR) (optional)</label>
+        <input type="number" id="price" min="0" data-i18n-placeholder="placeholderPrice" placeholder="45000">
+      </div>
+      <div class="field">
+        <label for="city" data-i18n="labelCitySell">City (optional)</label>
+        <select id="city">
+          <option value="" disabled selected data-i18n="selectCityDefault">Select city</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row full" id="conditionFieldRow">
+      <div class="field">
+        <label data-i18n="labelCondition">Condition</label>
+        <div class="condition-toggle">
+          <label><input type="radio" name="condition" value="new" checked><span data-i18n="conditionNew">New</span></label>
+          <label><input type="radio" name="condition" value="used"><span data-i18n="conditionUsed">Used</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row full">
+      <div class="field">
+        <label data-i18n="labelCommentsToggle">Comments on this listing</label>
+        <div class="condition-toggle">
+          <label><input type="radio" name="commentsEnabled" value="yes" checked><span data-i18n="commentsAllowLabel">Allow comments</span></label>
+          <label><input type="radio" name="commentsEnabled" value="no"><span data-i18n="commentsDisableLabel">Disable comments</span></label>
+        </div>
+        <div class="field-hint" data-i18n="commentsToggleHint">Buyers can ask public questions under your listing unless you disable this.</div>
+      </div>
+    </div>
+
+    <div class="form-row full">
+      <div class="field">
+        <label data-i18n="uploadImages">Upload Images</label>
+        <div class="image-upload-area" id="imageUploadArea">
+          <div class="image-upload-dropzone" id="dropzone">
+            <div class="upload-icon">📸</div>
+            <p data-i18n="dragDropImages">Drag & drop images here or click to browse</p>
+            <p class="upload-hint" data-i18n="imageUploadHint">Upload up to 6 images (JPEG, PNG, GIF) - Max 2MB each</p>
+            <input type="file" id="imageInput" accept="image/*" multiple>
+          </div>
+          <div class="image-preview-grid" id="imagePreviewGrid"></div>
+        </div>
+        <div class="field-hint" data-i18n="imageHelp">First image will be used as the main listing image</div>
+      </div>
+    </div>
+
+    <div class="form-row full">
+      <div class="field">
+        <label for="desc" data-i18n="labelDescription">Description</label>
+        <textarea id="desc" data-i18n-placeholder="placeholderDesc" placeholder="Service history, modifications, reason for selling…" required></textarea>
+        <div class="field-hint" data-i18n="sellHint">This is a frontend-only demo: no images are uploaded, your listing is saved in this browser.</div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="index.html" class="btn btn-cancel" data-i18n="cancelBtn">Cancel</a>
+      <button type="submit" class="btn btn-solid btn-publish" data-i18n="publishBtn">Publish listing</button>
+    </div>
+  </form>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-links">
+      <a href="index.html" data-i18n="home">Home</a>
+      <a href="about.html" data-i18n="about">About</a>
+      <a href="contact.html" data-i18n="contact">Contact</a>
+    </div>
+    <p data-i18n="footerText">Bike.X — a motorcycle-only classifieds concept inspired by Haraj. Demo data only, stored in your browser.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== CUSTOM MODAL ===== -->
+<div class="modal-overlay-custom" id="customModal">
+  <div class="modal-custom">
+    <div class="modal-custom-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+    </div>
+    <div class="modal-custom-content">
+      <h3 id="modalTitle">Warning</h3>
+      <p id="modalMessage">Please upload at least one image.</p>
+    </div>
+    <button class="btn btn-solid modal-custom-btn" id="modalOkBtn">OK</button>
+  </div>
+</div>
+
+<script src="js/i18n.js"></script>
+<script src="js/services/dataService.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  function initTheme(){
+    const saved = localStorage.getItem("moto_theme");
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+    if (typeof applyThemeLogo === "function") applyThemeLogo();
+  }
+  function toggleTheme(){
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("moto_theme", next);
+    if (typeof applyThemeLogo === "function") applyThemeLogo();
+  }
+  initTheme();
+  document.getElementById("themeSwitch").addEventListener("click", toggleTheme);
+  document.addEventListener("DOMContentLoaded", function() {
+    renderAuthArea();
+    setupMobileMenu();
+  });
+</script>
+<script src="js/sell.js"></script>
+</body>
+</html>
