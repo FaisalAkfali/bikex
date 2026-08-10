@@ -1,0 +1,885 @@
+/* ===========================================================
+   Bike.X — listing.js (REFACTORED)
+   All data now flows through DataService
+   =========================================================== */
+
+let currentListing = null;
+let currentImages = [];
+let currentImageIndex = 0;
+let comments = [];
+
+/* ---------- FALLBACK SVG (if no image) ---------- */
+function fallbackListingSVG(listing) {
+  const category = listing.category || "motorcycles";
+  const color = typeof colorFor !== 'undefined' ? colorFor(listing.brand || "") : '#ff5a1f';
+
+  if (category !== "motorcycles") {
+    const iconSvg = typeof categoryIconSVG !== 'undefined' ? categoryIconSVG(category, 64) : '';
+    const svg = `<svg viewBox="0 0 290 170" xmlns="http://www.w3.org/2000/svg">
+      <rect width="290" height="170" fill="${color}0d"/>
+      <g transform="translate(113,53)" style="color:${color}">${iconSvg}</g>
+    </svg>`;
+    return 'data:image/svg+xml,' + encodeURIComponent(svg);
+  }
+
+  const v = listing.variant || 0;
+  let svg = '';
+
+  if (typeof bikeSVG !== 'undefined') {
+    svg = bikeSVG(color, v);
+  } else {
+    svg = `<svg viewBox="0 0 290 170" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="65" cy="120" r="32" stroke="${color}" stroke-width="6" fill="none"/>
+      <circle cx="235" cy="120" r="32" stroke="${color}" stroke-width="6" fill="none"/>
+      <rect x="70" y="70" width="150" height="40" fill="${color}" opacity="0.3" rx="10"/>
+    </svg>`;
+  }
+
+  return 'data:image/svg+xml,' + encodeURIComponent(svg);
+}
+
+/* ---------- DOM READY ---------- */
+document.addEventListener("DOMContentLoaded", function() {
+  translateStaticPage();
+  setupMobileMenu();
+  
+  const params = new URLSearchParams(window.location.search);
+  const listingId = params.get("id");
+  
+  if (!listingId) {
+    window.location.href = "index.html";
+    return;
+  }
+  
+  loadListing(listingId);
+  setupLightbox();
+  setupCommentForm();
+});
+
+/* ---------- LOAD LISTING ---------- */
+function loadListing(id) {
+  try {
+    // ✅ REFACTORED: Uses DataService
+    const allListings = DataService.getAllListings();
+    const listing = allListings.find(l => l.id === id);
+    
+    if (!listing) {
+      document.getElementById("listingLoading").innerHTML = `
+        <div class="error-state">
+          <h2>Listing not found</h2>
+          <p>The motorcycle listing you're looking for doesn't exist.</p>
+          <a href="index.html" class="btn btn-solid">← Back to listings</a>
+        </div>
+      `;
+      return;
+    }
+    
+    currentListing = listing;
+    loadComments(id);
+    renderListing(listing);
+    
+  } catch (error) {
+    console.error("Error loading listing:", error);
+    document.getElementById("listingLoading").innerHTML = `
+      <div class="error-state">
+        <h2>Error loading listing</h2>
+        <p>There was a problem loading this listing. Please try again.</p>
+        <a href="index.html" class="btn btn-solid">← Back to listings</a>
+      </div>
+    `;
+  }
+}
+
+/* ---------- RENDER LISTING ---------- */
+function renderListing(listing) {
+  // Hide loading, show content
+  document.getElementById("listingLoading").style.display = "none";
+  document.getElementById("listingContent").style.display = "block";
+
+  // Seller can disable comments per-listing
+  const commentsSection = document.getElementById("commentsSection");
+  if (commentsSection) {
+    commentsSection.style.display = (listing.commentsEnabled === false) ? "none" : "block";
+  }
+
+  const category = listing.category || "motorcycles";
+  const cityDisplay = typeof cityLabel !== 'undefined' ? cityLabel(listing.city) : listing.city;
+  const isNew = listing.condition === 'new';
+  const conditionText = isNew ? (typeof t !== 'undefined' ? t("conditionNew") : "New") : (typeof t !== 'undefined' ? t("conditionUsed") : "Used");
+
+  if (category !== "motorcycles") {
+    // ---- Parts / Gear & Accessories / Services ----
+    const titleText = listing.title || "Listing";
+    document.getElementById("listingTitle").textContent = titleText;
+    document.title = `${titleText} — Bike.X`;
+
+    const priceDisplay = typeof formatPrice !== 'undefined' ? formatPrice(listing.price) : `SAR ${listing.price.toLocaleString()}`;
+    document.getElementById("listingPrice").textContent = category === "services"
+      ? `${typeof t !== 'undefined' ? t("fromPricePrefix") : "From"} ${priceDisplay}`
+      : priceDisplay;
+
+    if (listing.condition) {
+      document.getElementById("listingCondition").textContent = conditionText;
+      document.getElementById("listingCondition").className = `listing-condition ${listing.condition}`;
+    } else {
+      document.getElementById("listingCondition").style.display = "none";
+    }
+
+    // Hide motorcycle-only spec rows
+    ["detailBrandRow", "detailModelRow", "detailYearRow", "detailEngineRow", "detailMileageRow", "detailColorRow"].forEach(id => {
+      const row = document.getElementById(id);
+      if (row) row.style.display = "none";
+    });
+
+    document.getElementById("detailCity").textContent = cityDisplay;
+    if (listing.condition) {
+      document.getElementById("detailCondition").textContent = conditionText;
+    } else {
+      const row = document.getElementById("detailConditionRow");
+      if (row) row.style.display = "none";
+    }
+
+    if (listing.subtitle) {
+      const typeRow = document.getElementById("detailTypeRow");
+      if (typeRow) typeRow.style.display = "";
+      document.getElementById("detailType").textContent = listing.subtitle;
+    }
+  } else {
+    // ---- Motorcycles ----
+    let brandDisplay = listing.brand;
+    if (typeof brandLabel !== 'undefined') {
+      brandDisplay = brandLabel(listing.brand);
+    }
+
+    const titleParts = [listing.year, brandDisplay, listing.model].filter(Boolean);
+    const titleText = titleParts.join(" ") || brandDisplay;
+    document.getElementById("listingTitle").textContent = titleText;
+    document.title = `${titleText} — Bike.X`;
+
+    const priceDisplay = typeof formatPrice !== 'undefined' ? formatPrice(listing.price) : `SAR ${listing.price.toLocaleString()}`;
+    document.getElementById("listingPrice").textContent = priceDisplay;
+
+    document.getElementById("listingCondition").textContent = conditionText;
+    document.getElementById("listingCondition").className = `listing-condition ${listing.condition}`;
+
+    document.getElementById("detailBrand").textContent = brandDisplay;
+
+    if (listing.model) {
+      document.getElementById("detailModel").textContent = listing.model;
+    } else {
+      const row = document.getElementById("detailModelRow");
+      if (row) row.style.display = "none";
+    }
+
+    if (listing.year) {
+      document.getElementById("detailYear").textContent = listing.year;
+    } else {
+      const row = document.getElementById("detailYearRow");
+      if (row) row.style.display = "none";
+    }
+
+    if (listing.cc) {
+      document.getElementById("detailEngine").textContent = `${listing.cc} cc`;
+    } else {
+      const row = document.getElementById("detailEngineRow");
+      if (row) row.style.display = "none";
+    }
+
+    const kmUnit = typeof t !== 'undefined' ? t("kmUnit") : "km";
+    if (listing.mileage !== null && listing.mileage !== undefined) {
+      document.getElementById("detailMileage").textContent = `${listing.mileage.toLocaleString()} ${kmUnit}`;
+    } else {
+      const row = document.getElementById("detailMileageRow");
+      if (row) row.style.display = "none";
+    }
+
+    if (listing.color) {
+      document.getElementById("detailColor").textContent = listing.color;
+    } else {
+      const row = document.getElementById("detailColorRow");
+      if (row) row.style.display = "none";
+    }
+
+    if (listing.city) {
+      document.getElementById("detailCity").textContent = cityDisplay;
+    } else {
+      const row = document.getElementById("detailCityRow");
+      if (row) row.style.display = "none";
+    }
+
+    document.getElementById("detailCondition").textContent = conditionText;
+  }
+
+  // Description
+  const lang = typeof getLang !== 'undefined' ? getLang() : 'en';
+  const desc = (lang === 'ar' && listing.descAr) ? listing.descAr : listing.desc;
+  document.getElementById("listingDescription").textContent = desc || "No description provided.";
+  
+  // Seller info
+  const isUserListing = listing.id.startsWith("U");
+  const sellerName = isUserListing ? "Private Seller" : "Dealer";
+  document.getElementById("sellerName").textContent = sellerName;
+  document.getElementById("sellerLocation").textContent = `Member since 2024`;
+  document.getElementById("sellerAvatar").textContent = sellerName.charAt(0);
+
+  const ratingEl = document.getElementById("sellerRating");
+  if (ratingEl && typeof getSellerRating !== 'undefined') {
+    const sellerEmail = listing.creatorEmail || `${listing.id}@dealer.bikex.local`;
+    const { rating, reviewCount } = getSellerRating(sellerEmail);
+    ratingEl.innerHTML = `<span class="seller-rating-stars">${renderStarRating(rating)}</span> <span class="seller-rating-number">${rating}</span> <span class="seller-rating-count">(${reviewCount})</span>`;
+  }
+  
+  const avatarColor = getAvatarColor(sellerName);
+  document.getElementById("sellerAvatar").style.background = avatarColor;
+  
+  // Contact
+  document.getElementById("contactPhone").textContent = isUserListing ? "+966 5X XXX XXXX" : "+966 5X XXX XXXX";
+  
+  // Contact button
+  document.getElementById("contactSellerBtn").addEventListener("click", function() {
+    const contact = document.getElementById("sellerContact");
+    if (contact.style.display === "none") {
+      contact.style.display = "block";
+      this.textContent = typeof t !== 'undefined' ? t("hideContact") : "Hide Contact Details";
+    } else {
+      contact.style.display = "none";
+      this.textContent = typeof t !== 'undefined' ? t("showContact") : "Show Contact Details";
+    }
+  });
+
+  // ===== CHAT BUTTON =====
+  const chatBtn = document.getElementById("chatSellerBtn");
+  if (chatBtn) {
+    chatBtn.addEventListener("click", function() {
+      // ✅ REFACTORED: Uses DataService
+      const user = DataService.getSession();
+      if (!user) {
+        window.location.href = `login.html?next=listing.html?id=${listing.id}`;
+        return;
+      }
+      openChatModal(listing);
+    });
+  }
+  
+  // Setup Gallery
+  setupGallery(listing);
+  
+  // Setup Favorite
+  setupFavorite(listing);
+}
+
+/* ---------- CHAT FUNCTIONS (with status indicators) ---------- */
+function openChatModal(listing) {
+  let modal = document.getElementById("chatModal");
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = "chatModal";
+    modal.className = "modal-overlay-custom";
+    modal.innerHTML = `
+      <div class="modal-custom chat-modal">
+        <div class="chat-modal-header">
+          <h3 id="chatModalTitle">💬 Chat with Seller</h3>
+          <button class="chat-modal-close" id="chatModalClose">&times;</button>
+        </div>
+        <div class="chat-modal-messages" id="chatMessages">
+          <div class="chat-empty">Loading messages...</div>
+        </div>
+        <div class="chat-modal-input">
+          <textarea id="chatInput" placeholder="${typeof t !== 'undefined' ? t('chatPlaceholder') : 'Ask about the listing...'}" rows="2"></textarea>
+          <button class="btn btn-solid" id="chatSendBtn">${typeof t !== 'undefined' ? t('sendMessage') : 'Send'}</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  const overlay = document.getElementById("chatModal");
+  const titleEl = document.getElementById("chatModalTitle");
+  const messagesEl = document.getElementById("chatMessages");
+  const inputEl = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("chatSendBtn");
+  const closeBtn = document.getElementById("chatModalClose");
+
+  const brandDisplay = typeof brandLabel !== 'undefined' ? brandLabel(listing.brand) : listing.brand;
+  const listingTitle = listing.title || `${listing.year || ''} ${brandDisplay || ''} ${listing.model || ''}`.trim() || 'Listing';
+  if (titleEl) titleEl.textContent = `💬 Chat about "${listingTitle}"`;
+
+  loadChatMessages(listing, messagesEl);
+
+  overlay.classList.add("active");
+  document.body.style.overflow = "hidden";
+
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      overlay.classList.remove("active");
+      document.body.style.overflow = "";
+    };
+  }
+  overlay.onclick = function(e) {
+    if (e.target === this) {
+      overlay.classList.remove("active");
+      document.body.style.overflow = "";
+    }
+  };
+
+  if (sendBtn) {
+    sendBtn.onclick = function() {
+      sendChatMessage(listing, inputEl, messagesEl);
+    };
+  }
+  if (inputEl) {
+    inputEl.onkeydown = function(e) {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage(listing, inputEl, messagesEl);
+      }
+    };
+  }
+}
+
+function loadChatMessages(listing, container) {
+  const currentUser = DataService.getSession();
+  if (!currentUser) {
+    container.innerHTML = `<div class="chat-empty">Please log in to chat.</div>`;
+    return;
+  }
+
+  const sellerEmail = listing.creatorEmail || listing.email || "seller@example.com";
+
+  const allMessages = DataService.getMessages();
+  const listingMessages = allMessages.filter(m =>
+    m.listingId === listing.id &&
+    ((m.from === currentUser.email && m.to === sellerEmail) ||
+     (m.from === sellerEmail && m.to === currentUser.email))
+  );
+
+  if (listingMessages.length === 0) {
+    container.innerHTML = `<div class="chat-empty">No messages yet. Start the conversation!</div>`;
+    return;
+  }
+
+  container.innerHTML = listingMessages.map(msg => {
+    const isOwn = msg.from === currentUser.email;
+    const senderName = msg.fromName || msg.from;
+    
+    // ✅ Status indicator for own messages
+    let statusHtml = '';
+    if (isOwn) {
+      const status = DataService.getMessageStatus(msg);
+      if (status === 'read') {
+        statusHtml = `<span class="msg-status read">✓✓</span>`;
+      } else if (status === 'delivered') {
+        statusHtml = `<span class="msg-status delivered">✓✓</span>`;
+      } else if (status === 'sent') {
+        statusHtml = `<span class="msg-status sent">✓</span>`;
+      } else {
+        statusHtml = `<span class="msg-status sending">⏳</span>`;
+      }
+    }
+    
+    return `
+      <div class="chat-message ${isOwn ? 'chat-message-own' : 'chat-message-other'}">
+        <div class="chat-message-sender">${isOwn ? 'You' : senderName}</div>
+        <div class="chat-message-text">${escapeHtml(msg.message)}</div>
+        <div class="chat-message-time">
+          ${new Date(msg.timestamp).toLocaleTimeString()}
+          ${statusHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.scrollTop = container.scrollHeight;
+  
+  // Mark messages as read
+  DataService.markMessagesAsRead(listing.id, currentUser.email);
+  
+  // Re-render after a moment to show read receipts
+  setTimeout(() => {
+    loadChatMessages(listing, container);
+  }, 500);
+}
+
+function sendChatMessage(listing, inputEl, messagesEl) {
+  const currentUser = DataService.getSession();
+  if (!currentUser) {
+    showModal("Please log in to send messages.", "⚠️ Not Logged In", "error", "OK", false);
+    return;
+  }
+
+  const message = inputEl.value.trim();
+  if (!message) return;
+
+  const sellerEmail = listing.creatorEmail || listing.email || "seller@example.com";
+  const sellerName = listing.creatorName || "Seller";
+
+  const newMessage = {
+    listingId: listing.id,
+    from: currentUser.email,
+    fromName: currentUser.name,
+    to: sellerEmail,
+    toName: sellerName,
+    message: message
+  };
+
+  // ✅ Send message (no modal - status indicators show delivery)
+  DataService.sendMessage(newMessage);
+
+  inputEl.value = "";
+  loadChatMessages(listing, messagesEl);
+}
+
+function loadChatMessages(listing, container) {
+  // ✅ REFACTORED: Uses DataService
+  const currentUser = DataService.getSession();
+  if (!currentUser) {
+    container.innerHTML = `<div class="chat-empty">Please log in to chat.</div>`;
+    return;
+  }
+
+  const sellerEmail = listing.creatorEmail || listing.email || "seller@example.com";
+
+  // ✅ REFACTORED: Uses DataService
+  const allMessages = DataService.getMessages();
+  const listingMessages = allMessages.filter(m =>
+    m.listingId === listing.id &&
+    ((m.from === currentUser.email && m.to === sellerEmail) ||
+     (m.from === sellerEmail && m.to === currentUser.email))
+  );
+
+  if (listingMessages.length === 0) {
+    container.innerHTML = `<div class="chat-empty">No messages yet. Start the conversation!</div>`;
+    return;
+  }
+
+  container.innerHTML = listingMessages.map(msg => {
+    const isOwn = msg.from === currentUser.email;
+    const senderName = msg.fromName || msg.from;
+    return `
+      <div class="chat-message ${isOwn ? 'chat-message-own' : 'chat-message-other'}">
+        <div class="chat-message-sender">${isOwn ? 'You' : senderName}</div>
+        <div class="chat-message-text">${escapeHtml(msg.message)}</div>
+        <div class="chat-message-time">${new Date(msg.timestamp).toLocaleTimeString()}</div>
+      </div>
+    `;
+  }).join('');
+
+  container.scrollTop = container.scrollHeight;
+  
+  // ✅ REFACTORED: Uses DataService
+  DataService.markMessagesAsRead(listing.id, currentUser.email);
+}
+
+function sendChatMessage(listing, inputEl, messagesEl) {
+  // ✅ REFACTORED: Uses DataService
+  const currentUser = DataService.getSession();
+  if (!currentUser) {
+    showModal("Please log in to send messages.", "⚠️ Not Logged In", "error");
+    return;
+  }
+
+  const message = inputEl.value.trim();
+  if (!message) return;
+
+  const sellerEmail = listing.creatorEmail || listing.email || "seller@example.com";
+  const sellerName = listing.creatorName || "Seller";
+
+  const newMessage = {
+    listingId: listing.id,
+    from: currentUser.email,
+    fromName: currentUser.name,
+    to: sellerEmail,
+    toName: sellerName,
+    message: message
+  };
+
+  // ✅ REFACTORED: Uses DataService
+  DataService.sendMessage(newMessage);
+
+  inputEl.value = "";
+  loadChatMessages(listing, messagesEl);
+}
+
+/* ---------- GALLERY FUNCTIONS ---------- */
+function setupGallery(listing) {
+  if (listing.images && listing.images.length > 0) {
+    currentImages = listing.images;
+  } else {
+    currentImages = [fallbackListingSVG(listing)];
+  }
+  
+  currentImageIndex = 0;
+  updateMainImage();
+  
+  const thumbnailsContainer = document.getElementById("galleryThumbnails");
+  if (currentImages.length > 1) {
+    thumbnailsContainer.innerHTML = currentImages.map((img, index) => `
+      <div class="gallery-thumbnail ${index === 0 ? 'active' : ''}" data-index="${index}">
+        <img src="${img}" alt="Thumbnail ${index + 1}" onerror="this.src=fallbackListingSVG(currentListing || {});">
+      </div>
+    `).join('');
+    
+    thumbnailsContainer.querySelectorAll('.gallery-thumbnail').forEach(thumb => {
+      thumb.addEventListener('click', function() {
+        const index = Number(this.dataset.index);
+        currentImageIndex = index;
+        updateMainImage();
+        updateThumbnails();
+      });
+    });
+    
+    document.getElementById("galleryPrev").style.display = 'flex';
+    document.getElementById("galleryNext").style.display = 'flex';
+  } else {
+    thumbnailsContainer.innerHTML = '';
+    document.getElementById("galleryPrev").style.display = 'none';
+    document.getElementById("galleryNext").style.display = 'none';
+  }
+  
+  document.getElementById("galleryPrev").addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (currentImages.length <= 1) return;
+    currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+    updateMainImage();
+    updateThumbnails();
+  });
+  
+  document.getElementById("galleryNext").addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (currentImages.length <= 1) return;
+    currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+    updateMainImage();
+    updateThumbnails();
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if (document.getElementById("lightboxOverlay").classList.contains("active")) return;
+    if (currentImages.length <= 1) return;
+    if (e.key === 'ArrowLeft') {
+      currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+      updateMainImage();
+      updateThumbnails();
+    } else if (e.key === 'ArrowRight') {
+      currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+      updateMainImage();
+      updateThumbnails();
+    }
+  });
+  
+  document.getElementById("galleryExpand").addEventListener('click', function() {
+    openLightbox(currentImageIndex);
+  });
+  
+  document.getElementById("mainImage").addEventListener('click', function() {
+    openLightbox(currentImageIndex);
+  });
+}
+
+function updateMainImage() {
+  const img = document.getElementById("mainImage");
+  if (currentImages.length > 0 && currentImages[currentImageIndex]) {
+    img.src = currentImages[currentImageIndex];
+    img.onerror = function() {
+      img.onerror = null;
+      img.src = fallbackListingSVG(currentListing || {});
+    };
+  }
+  img.alt = `Image ${currentImageIndex + 1}`;
+  document.getElementById("imageCounter").textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
+}
+
+function updateThumbnails() {
+  document.querySelectorAll('.gallery-thumbnail').forEach((thumb, index) => {
+    thumb.classList.toggle('active', index === currentImageIndex);
+  });
+}
+
+/* ---------- LIGHTBOX ---------- */
+function setupLightbox() {
+  const overlay = document.getElementById("lightboxOverlay");
+  const img = document.getElementById("lightboxImage");
+  const closeBtn = document.getElementById("lightboxClose");
+  const prevBtn = document.getElementById("lightboxPrev");
+  const nextBtn = document.getElementById("lightboxNext");
+  const counter = document.getElementById("lightboxCounter");
+  
+  closeBtn.addEventListener('click', closeLightbox);
+  overlay.addEventListener('click', function(e) {
+    if (e.target === this) closeLightbox();
+  });
+  
+  prevBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (currentImages.length <= 1) return;
+    currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
+    img.src = currentImages[currentImageIndex];
+    counter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
+    updateMainImage();
+    updateThumbnails();
+  });
+  
+  nextBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (currentImages.length <= 1) return;
+    currentImageIndex = (currentImageIndex + 1) % currentImages.length;
+    img.src = currentImages[currentImageIndex];
+    counter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
+    updateMainImage();
+    updateThumbnails();
+  });
+  
+  document.addEventListener('keydown', function(e) {
+    if (!overlay.classList.contains("active")) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') prevBtn.click();
+    if (e.key === 'ArrowRight') nextBtn.click();
+  });
+}
+
+function openLightbox(index) {
+  const overlay = document.getElementById("lightboxOverlay");
+  const img = document.getElementById("lightboxImage");
+  const counter = document.getElementById("lightboxCounter");
+  
+  if (currentImages.length === 0) return;
+  
+  currentImageIndex = index;
+  img.src = currentImages[currentImageIndex] || '';
+  counter.textContent = `${currentImageIndex + 1} / ${currentImages.length}`;
+  overlay.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeLightbox() {
+  document.getElementById("lightboxOverlay").classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+/* ---------- FAVORITE ---------- */
+function setupFavorite(listing) {
+  const btn = document.getElementById("favoriteBtn");
+  const icon = document.getElementById("favoriteIcon");
+  
+  // ✅ REFACTORED: Uses DataService
+  let favs = DataService.getFavorites();
+  
+  const isFav = favs.includes(listing.id);
+  
+  if (isFav) {
+    icon.textContent = '♥';
+    btn.classList.add('active');
+  }
+  
+  btn.addEventListener('click', function() {
+    // ✅ REFACTORED: Uses DataService
+    const currentFavs = DataService.toggleFavorite(listing.id);
+    
+    if (currentFavs.includes(listing.id)) {
+      icon.textContent = '♥';
+      this.classList.add('active');
+    } else {
+      icon.textContent = '♡';
+      this.classList.remove('active');
+    }
+  });
+}
+
+/* ---------- COMMENTS ---------- */
+function loadComments(listingId) {
+  // ✅ REFACTORED: Uses DataService
+  comments = DataService.getComments(listingId);
+  renderComments();
+}
+
+function renderComments() {
+  const container = document.getElementById("commentsList");
+  
+  if (comments.length === 0) {
+    container.innerHTML = `
+      <div class="comment-empty">
+        <p>${typeof t !== 'undefined' ? t("noCommentsYet") : "No comments yet. Be the first to comment!"}</p>
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = comments.map(comment => `
+    <div class="comment-item">
+      <div class="comment-header">
+        <span class="comment-author">${escapeHtml(comment.author)}</span>
+        <span class="comment-date">${new Date(comment.date).toLocaleDateString()} ${new Date(comment.date).toLocaleTimeString()}</span>
+      </div>
+      <div class="comment-body">${escapeHtml(comment.text)}</div>
+    </div>
+  `).join('');
+}
+
+function setupCommentForm() {
+  const form = document.getElementById("commentForm");
+  const input = document.getElementById("commentInput");
+  const message = document.getElementById("commentMessage");
+  
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    const text = input.value.trim();
+    if (!text) {
+      showCommentMessage("Please write a comment.", "error");
+      return;
+    }
+    
+    // ✅ REFACTORED: Uses DataService
+    let user = DataService.getSession();
+    
+    if (!user) {
+      showCommentMessage("Please log in to post a comment.", "error");
+      return;
+    }
+    
+    const comment = {
+      author: user.name || "Anonymous",
+      authorEmail: user.email || "",
+      text: text
+    };
+    
+    // ✅ REFACTORED: Uses DataService
+    comments = DataService.addComment(currentListing.id, comment);
+    renderComments();
+    input.value = "";
+    showCommentMessage("Comment posted successfully!", "success");
+  });
+}
+
+function showCommentMessage(msg, type) {
+  const el = document.getElementById("commentMessage");
+  el.textContent = msg;
+  el.className = "comment-message " + type;
+  setTimeout(() => {
+    el.className = "comment-message";
+  }, 5000);
+}
+
+/* ---------- HELPER FUNCTIONS ---------- */
+function getAvatarColor(name) {
+  const colors = ['#ff5a1f', '#1f6f5c', '#2563eb', '#b91c1c', '#7c3aed', '#0d9488', '#a16207', '#dc2626', '#059669', '#4f46e5'];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+}
+
+/* ---------- MOBILE MENU ---------- */
+function setupMobileMenu() {
+  const hamburger = document.getElementById("hamburgerMenu");
+  const overlay = document.getElementById("mobileMenuOverlay");
+  const backdrop = document.getElementById("menuBackdrop");
+  const closeBtn = document.getElementById("mobileMenuClose");
+  const mobileAuth = document.getElementById("mobileAuth");
+
+  const mobileSearchBtn = document.getElementById("mobileSearchBtn");
+  const mobileSearchInput = document.getElementById("mobileSearchInput");
+
+  if (mobileSearchBtn && mobileSearchInput) {
+    mobileSearchBtn.addEventListener("click", function() {
+      const query = mobileSearchInput.value.trim();
+      if (query) {
+        closeMenu();
+        window.location.href = "index.html?search=" + encodeURIComponent(query);
+      }
+    });
+    mobileSearchInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        const query = this.value.trim();
+        if (query) {
+          closeMenu();
+          window.location.href = "index.html?search=" + encodeURIComponent(query);
+        }
+      }
+    });
+  }
+
+  function updateMobileAuth() {
+    if (!mobileAuth) return;
+    // ✅ REFACTORED: Uses DataService
+    const user = DataService.getSession();
+    if (user) {
+      mobileAuth.innerHTML = `
+        <a href="dashboard.html" class="btn btn-solid" style="width:100%;justify-content:center;">
+          👤 ${user.name}
+        </a>
+        <button class="btn" id="mobileLogoutBtn" style="width:100%;justify-content:center;">
+          🚪 ${t("logoutBtn")}
+        </button>
+      `;
+      const logoutBtn = mobileAuth.querySelector("#mobileLogoutBtn");
+      if (logoutBtn) {
+        logoutBtn.addEventListener("click", function() {
+          // ✅ REFACTORED: Uses DataService
+          DataService.logout();
+          window.location.href = "index.html";
+        });
+      }
+    } else {
+      mobileAuth.innerHTML = `
+        <a href="login.html" class="btn btn-solid" style="width:100%;justify-content:center;">
+          🔑 ${t("loginLink")}
+        </a>
+      `;
+    }
+  }
+
+  function openMenu() {
+    overlay.classList.add("open");
+    backdrop.classList.add("active");
+    hamburger.classList.add("active");
+    document.body.style.overflow = "hidden";
+    updateMobileAuth();
+  }
+
+  function closeMenu() {
+    overlay.classList.remove("open");
+    backdrop.classList.remove("active");
+    hamburger.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+
+  if (hamburger) hamburger.addEventListener("click", openMenu);
+  if (closeBtn) closeBtn.addEventListener("click", closeMenu);
+  if (backdrop) backdrop.addEventListener("click", closeMenu);
+
+  document.querySelectorAll(".mobile-nav-link").forEach(link => {
+    link.addEventListener("click", closeMenu);
+  });
+
+  document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeMenu();
+  });
+
+  const mobileLangSwitch = document.getElementById("mobileLangSwitch");
+  if (mobileLangSwitch) {
+    const newLangBtn = mobileLangSwitch.cloneNode(true);
+    mobileLangSwitch.parentNode.replaceChild(newLangBtn, mobileLangSwitch);
+    newLangBtn.addEventListener('click', function() {
+      const currentLang = localStorage.getItem("moto_lang") || "en";
+      const newLang = currentLang === "ar" ? "en" : "ar";
+      localStorage.setItem("moto_lang", newLang);
+      window.location.reload();
+    });
+  }
+
+  const mobileThemeSwitch = document.getElementById("mobileThemeSwitch");
+  if (mobileThemeSwitch) {
+    const newThemeBtn = mobileThemeSwitch.cloneNode(true);
+    mobileThemeSwitch.parentNode.replaceChild(newThemeBtn, mobileThemeSwitch);
+    newThemeBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const current = document.documentElement.getAttribute("data-theme");
+      const next = current === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", next);
+      localStorage.setItem("moto_theme", next);
+      console.log('Mobile theme toggled to:', next);
+    });
+  }
+}
