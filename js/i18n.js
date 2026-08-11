@@ -400,7 +400,7 @@ fileTooLarge: "File Too Large",
     hideContact: "إخفاء بيانات التواصل",
     contactDemo: "+966 5X XXX XXXX (تجريبي)",
 
-    footerText: "Bike.X — إعلانات مخصص للدراجات النارية",
+    footerText: "Bike.X — إعلانات مخصصة للدراجات النارية",
 
     sellTitle: "أضف إعلان دراجتك",
     sellSubtitle: "أدخل التفاصيل أدناه.",
