@@ -490,7 +490,7 @@ const I18N = {
     emptyTitle: "لا توجد نتيجة تطابق هذه الفلاتر",
     emptyText: "حاول توسيع نطاق السعر أو إزالة أحد الفلاتر.",
 
-    specBrand: "الماركة", specModel: "الموديل", specYear: "السنة", specMileage: "المسافة المقطوعة",
+    specBrand: "الشركة", specModel: "الفئة", specYear: "السنة", specMileage: "المسافة المقطوعة",
     specEngine: "المحرك", specColor: "اللون", specCondition: "الحالة", specCity: "المدينة",
     specType: "النوع",
     sellerIn: city => `بائع في ${city}`,
