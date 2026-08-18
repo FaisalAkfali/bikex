@@ -809,7 +809,7 @@ function renderComments() {
   if (comments.length === 0) {
     container.innerHTML = `
       <div class="comment-empty">
-        <p>${typeof t !== 'undefined' ? t("noCommentsYet") : "No comments yet. Be the first to comment!"}</p>
+        <p>${typeof t !== 'undefined' ? t("noCommentsYet") : "No comments yet."}</p>
       </div>
     `;
     return;
