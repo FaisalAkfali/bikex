@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="img/Bike X in black version.png">
+<script>
+  (function(){
+    var lang = localStorage.getItem("moto_lang") || "en";
+    document.documentElement.setAttribute("lang", lang);
+    document.documentElement.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
+    var savedTheme = localStorage.getItem("moto_theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", savedTheme || (prefersDark ? "dark" : "light"));
+  })();
+</script>
+<title>Log in — Bike.X</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body data-title-key="loginTitle">
+<div id="pageLoader">
+  <div class="loader-mark">BIKE<span class="dot">.X</span></div>
+</div>
+
+
+<header class="site-header">
+  <div class="header-row">
+    <a href="index.html" class="logo">
+      <span class="site-logo-badge"><img src="img/logo.png" alt="Bike.X" class="site-logo-img"></span>
+      <span class="tagline" data-i18n="tagline">motorcycles only</span>
+    </a>
+    
+    <div class="header-actions">
+      <a href="index.html" class="btn" id="backToListingsBtn" data-i18n="backToListings">← Back to listings</a>
+      <button class="btn lang-switch" id="langSwitch">العربية</button>
+      <button class="theme-switch" id="themeSwitch" data-i18n-aria="themeAria" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+      </button>
+      <a href="sell.html" class="btn btn-solid mobile-quick-sell" data-i18n="sellBtn">+ Sell</a>
+      <button class="hamburger-menu" id="hamburgerMenu" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="menu-backdrop" id="menuBackdrop"></div>
+<div class="mobile-menu-overlay" id="mobileMenuOverlay">
+  <div class="mobile-menu-content">
+    <div class="mobile-menu-header">
+      <span class="mobile-menu-logo site-logo-badge"><img src="img/logo.png" alt="Bike.X" class="site-logo-img"></span>
+      <button class="mobile-menu-close" id="mobileMenuClose">×</button>
+    </div>
+    
+    <div class="mobile-search">
+      <div class="mobile-search-wrapper">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" id="mobileSearchInput" data-i18n-placeholder="searchPlaceholder" placeholder="Search brand, model or city…" aria-label="Search listings">
+        <button type="submit" id="mobileSearchBtn" data-i18n="searchBtn">Search</button>
+      </div>
+    </div>
+    
+    <nav class="mobile-nav">
+      <a href="index.html" class="mobile-nav-link" data-i18n="home">Home</a>
+      <a href="about.html" class="mobile-nav-link" data-i18n="about">About</a>
+      <a href="contact.html" class="mobile-nav-link" data-i18n="contact">Contact</a>
+      <div class="mobile-divider"></div>
+      <a href="sell.html" class="mobile-nav-link btn-solid" data-i18n="sellBtn">+ Sell</a>
+      <div class="mobile-divider"></div>
+      <div id="mobileNavAuth" class="mobile-nav-auth"></div>
+    </nav>
+    
+    <div class="mobile-auth-section" id="mobileAuth"></div>
+    
+    <div class="mobile-menu-footer">
+      <button class="btn lang-switch" id="mobileLangSwitch">العربية</button>
+      <button class="theme-switch" id="mobileThemeSwitch" data-i18n-aria="themeAria" aria-label="Toggle dark mode">
+        <span class="knob">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="auth-page">
+  <h1 data-i18n="loginTitle">Log in to Bike.X</h1>
+  <p class="auth-subtitle" data-i18n="loginSubtitle">Welcome back. Log in to manage your listings.</p>
+
+  <div class="auth-card">
+    <div class="field-error" id="loginError"></div>
+    <form id="loginForm">
+      <div class="field">
+        <label for="email" data-i18n="labelEmail">Email</label>
+        <input type="email" id="email" data-i18n-placeholder="placeholderEmail" placeholder="you@example.com" required>
+      </div>
+      <div class="field">
+        <label for="password" data-i18n="labelPassword">Password</label>
+        <input type="password" id="password" data-i18n-placeholder="placeholderPassword" placeholder="••••••••" required>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="remember">
+        <label for="remember" data-i18n="rememberMe">Remember me</label>
+      </div>
+      <button type="submit" class="btn btn-solid btn-auth" data-i18n="loginBtn">Log in</button>
+    </form>
+
+    <div class="auth-divider"><span data-i18n="orContinueWith">or continue with</span></div>
+
+    <button type="button" class="btn btn-google-demo" id="googleSignInBtn">
+      <svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true">
+        <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+        <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 19 13 24 13c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4c-7.4 0-13.8 4.1-17.2 10.1z"/>
+        <path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.9 14-5.2l-6.5-5.4c-1.9 1.4-4.5 2.3-7.5 2.3-5.3 0-9.7-3.4-11.3-8l-6.6 5.1C9.9 39.7 16.4 44 24 44z"/>
+        <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.5 5.4C41.4 36.4 44 30.7 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+      </svg>
+      <span data-i18n="signInGoogle">Sign in with Google</span>
+    </button>
+
+    <div class="otp-login-section">
+      <button type="button" class="btn otp-toggle-btn" id="showOtpBtn">
+        <i class="fa-solid fa-mobile-screen-button" style="color: rgb(255, 122, 61);"></i>
+        <span data-i18n="loginWithPhone">Log in with phone</span>
+      </button>
+      <div id="otpForm" style="display:none;">
+        <div class="field">
+          <label for="otpPhone" data-i18n="labelPhone">Phone number</label>
+          <input type="tel" id="otpPhone" placeholder="+966 5X XXX XXXX">
+        </div>
+        <button type="button" class="btn btn-solid" id="sendOtpBtn" data-i18n="sendCode">Send code</button>
+
+        <div id="otpCodeSection" style="display:none;">
+          <div class="demo-hint" id="otpDemoHint"></div>
+          <div class="field">
+            <label for="otpCode" data-i18n="labelOtpCode">Enter code</label>
+            <input type="text" id="otpCode" inputmode="numeric" maxlength="6" placeholder="000000">
+          </div>
+          <button type="button" class="btn btn-solid" id="verifyOtpBtn" data-i18n="verifyCode">Verify &amp; log in</button>
+          <div class="field-error" id="otpError"></div>
+        </div>
+      </div>
+    </div>
+    <div class="auth-switch">
+      <span data-i18n="noAccountYet">Don't have an account?</span>
+      <a href="#" id="toSignup" data-i18n="signupLink">Sign up</a>
+    </div>
+  </div>
+</div>
+
+<!-- Demo Google account picker -->
+<div class="modal-overlay-custom" id="googleDemoModal">
+  <div class="modal-custom google-picker-modal">
+    <button type="button" class="modal-close" id="googleDemoClose" aria-label="Close">&times;</button>
+    <svg viewBox="0 0 48 48" width="28" height="28" aria-hidden="true" style="margin:0 auto 12px; display:block;">
+      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.6-6 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 19 13 24 13c3.1 0 5.9 1.1 8 3.1l5.7-5.7C34.5 6 29.5 4 24 4c-7.4 0-13.8 4.1-17.2 10.1z"/>
+      <path fill="#4CAF50" d="M24 44c5.4 0 10.3-1.9 14-5.2l-6.5-5.4c-1.9 1.4-4.5 2.3-7.5 2.3-5.3 0-9.7-3.4-11.3-8l-6.6 5.1C9.9 39.7 16.4 44 24 44z"/>
+      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.4l6.5 5.4C41.4 36.4 44 30.7 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+    </svg>
+    <h3 data-i18n="googlePickerTitle">Choose an account</h3>
+    <p class="google-picker-sub" data-i18n="googlePickerSubtitle">to continue to Bike.X</p>
+    <div class="google-account-list" id="googleAccountList"></div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="footer-content">
+    <div class="footer-links">
+      <a href="index.html" data-i18n="home">Home</a>
+      <a href="about.html" data-i18n="about">About</a>
+      <a href="contact.html" data-i18n="contact">Contact</a>
+    </div>
+    <p data-i18n="footerText">Bike.X — a motorcycle-only classifieds concept inspired by Haraj. Demo data only, stored in your browser.</p>
+  </div>
+</footer>
+
+<script src="js/i18n.js"></script>
+<script src="js/services/dataService.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  function initTheme(){
+    const saved = localStorage.getItem("moto_theme");
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute("data-theme", saved || (prefersDark ? "dark" : "light"));
+    if (typeof applyThemeLogo === "function") applyThemeLogo();
+  }
+  function toggleTheme(){
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    localStorage.setItem("moto_theme", next);
+    if (typeof applyThemeLogo === "function") applyThemeLogo();
+  }
+  initTheme();
+  document.getElementById("themeSwitch").addEventListener("click", toggleTheme);
+
+  document.addEventListener("DOMContentLoaded", function() {
+    translateStaticPage();
+    setupMobileMenu();
+
+    const next = getNextParam();
+    document.getElementById("toSignup").href = "signup.html?next=" + encodeURIComponent(next);
+
+    document.getElementById("loginForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const errorBox = document.getElementById("loginError");
+
+      const user = findUserByEmail(email);
+      if(!user || user.password !== password){
+        errorBox.textContent = t("loginErrorInvalid");
+        errorBox.classList.add("show");
+        return;
+      }
+      errorBox.classList.remove("show");
+      setSession(user);
+      window.location.href = next;
+    });
+
+    /* ---------- Demo Google sign-in ---------- */
+    const GOOGLE_DEMO_ACCOUNTS = [
+      { name: "Ahmed Al-Otaibi", email: "ahmed.demo@gmail.com" },
+      { name: "Sara Al-Harbi", email: "sara.demo@gmail.com" }
+    ];
+
+    function renderGoogleAccountList() {
+      const list = document.getElementById("googleAccountList");
+      list.innerHTML = GOOGLE_DEMO_ACCOUNTS.map(acc => {
+        const initials = getUserInitials(acc.name);
+        const color = getAvatarColor(acc.name);
+        return `
+          <button type="button" class="google-account-item" data-email="${acc.email}" data-name="${acc.name}">
+            <span class="user-avatar-initials" style="background:${color};">${initials}</span>
+            <span class="google-account-item-info">
+              <span class="google-account-item-name">${acc.name}</span>
+              <span class="google-account-item-email">${acc.email}</span>
+            </span>
+          </button>`;
+      }).join("");
+
+      list.querySelectorAll(".google-account-item").forEach(btn => {
+        btn.addEventListener("click", function() {
+          const profile = { name: this.dataset.name, email: this.dataset.email };
+          loginOrCreateGoogleDemo(profile);
+          window.location.href = next;
+        });
+      });
+    }
+
+    document.getElementById("googleSignInBtn").addEventListener("click", function() {
+      renderGoogleAccountList();
+      document.getElementById("googleDemoModal").classList.add("active");
+    });
+    document.getElementById("googleDemoClose").addEventListener("click", function() {
+      document.getElementById("googleDemoModal").classList.remove("active");
+    });
+    document.getElementById("googleDemoModal").addEventListener("click", function(e) {
+      if (e.target === this) this.classList.remove("active");
+    });
+
+    /* ---------- Demo phone/OTP login ---------- */
+    let pendingOtpCode = null;
+    let pendingOtpPhone = null;
+
+    document.getElementById("showOtpBtn").addEventListener("click", function() {
+      const form = document.getElementById("otpForm");
+      form.style.display = form.style.display === "none" ? "block" : "none";
+    });
+
+    document.getElementById("sendOtpBtn").addEventListener("click", function() {
+      const phone = document.getElementById("otpPhone").value.trim();
+      const errorBox = document.getElementById("otpError");
+      errorBox.classList.remove("show");
+      errorBox.textContent = "";
+
+      if (!phone || phone.replace(/\D/g, "").length < 8) {
+        errorBox.textContent = t("otpInvalidPhone");
+        errorBox.classList.add("show");
+        return;
+      }
+
+      pendingOtpPhone = phone;
+      pendingOtpCode = String(Math.floor(100000 + Math.random() * 900000));
+
+      document.getElementById("otpDemoHint").textContent = t("otpDemoCodeHint")(pendingOtpCode);
+      document.getElementById("otpCodeSection").style.display = "block";
+      document.getElementById("otpCode").focus();
+    });
+
+    document.getElementById("verifyOtpBtn").addEventListener("click", function() {
+      const entered = document.getElementById("otpCode").value.trim();
+      const errorBox = document.getElementById("otpError");
+
+      if (entered !== pendingOtpCode) {
+        errorBox.textContent = t("otpInvalidCode");
+        errorBox.classList.add("show");
+        return;
+      }
+
+      errorBox.classList.remove("show");
+      loginOrCreateByPhone(pendingOtpPhone);
+      window.location.href = next;
+    });
+  });
+</script>
+</body>
+</html>
