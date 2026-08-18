@@ -11,16 +11,16 @@ let sellCategory = "motorcycles";
 
 const SELL_COPY = {
   en: {
-    motorcycles: { title: "List your motorcycle", subtitle: "Fill in the details below. Your listing appears at the top of the homepage instantly — no account needed for this demo." },
-    parts: { title: "List a part", subtitle: "Fill in the details below to list a motorcycle part or component. Your listing appears instantly on the homepage." },
-    gear: { title: "List gear or an accessory", subtitle: "Fill in the details below to list riding gear or an accessory. Your listing appears instantly on the homepage." },
-    services: { title: "List a service", subtitle: "Fill in the details below to list a service. Your listing appears instantly on the homepage." }
+    motorcycles: { title: "List your motorcycle", subtitle: "Fill in the details below." },
+    parts: { title: "List a part", subtitle: "Fill in the details below to list a motorcycle part or component." },
+    gear: { title: "List gear or an accessory", subtitle: "Fill in the details below to list riding gear or an accessory." },
+    services: { title: "List a service", subtitle: "Fill in the details below to list a service." }
   },
   ar: {
-    motorcycles: { title: "أضف دراجتك النارية", subtitle: "املأ التفاصيل أدناه. سيظهر إعلانك أعلى الصفحة الرئيسية فورًا — لا حاجة لحساب في هذا العرض التجريبي." },
-    parts: { title: "أضف قطعة غيار", subtitle: "املأ التفاصيل أدناه لإضافة قطعة غيار أو مكوّن. سيظهر إعلانك فورًا في الصفحة الرئيسية." },
-    gear: { title: "أضف ملابس أو مستلزمات", subtitle: "املأ التفاصيل أدناه لإضافة ملابس ركوب أو مستلزم. سيظهر إعلانك فورًا في الصفحة الرئيسية." },
-    services: { title: "أضف خدمة", subtitle: "املأ التفاصيل أدناه لإضافة خدمة. سيظهر إعلانك فورًا في الصفحة الرئيسية." }
+    motorcycles: { title: "أضف دراجتك النارية", subtitle: "املأ التفاصيل أدناه.ا" },
+    parts: { title: "أضف قطعة غيار", subtitle: "املأ التفاصيل أدناه لإضافة قطعة غيار." },
+    gear: { title: "أضف ملابس أو مستلزمات", subtitle: "املأ التفاصيل أدناه لإضافة ملابس أو مستلزم." },
+    services: { title: "أضف خدمة", subtitle: "املأ التفاصيل أدناه لإضافة خدمة." }
   }
 };
 
