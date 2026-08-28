@@ -4125,3 +4125,66 @@ html[dir="rtl"] .comment-reply {
     padding-right: 10px;
   }
 }
+
+/* ===========================================================
+   DELETION FEEDBACK MODAL
+   =========================================================== */
+
+#deleteFeedbackModal .modal-custom {
+  max-width: 480px;
+}
+
+#deleteFeedbackModal .modal-custom-content {
+  text-align: center;
+}
+
+#deleteFeedbackModal .field {
+  text-align: left;
+}
+
+html[dir="rtl"] #deleteFeedbackModal .field {
+  text-align: right;
+}
+
+#deleteFeedbackModal .modal-custom-btn {
+  min-height: 44px;
+  font-weight: 600;
+}
+
+#deleteFeedbackModal .modal-custom-btn#deleteFeedbackSkipBtn {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+#deleteFeedbackModal .modal-custom-btn#deleteFeedbackSkipBtn:hover {
+  background: var(--border);
+  border-color: var(--muted);
+  transform: translateY(-1px);
+}
+
+#deleteFeedbackModal .modal-custom-btn#deleteFeedbackSubmitBtn {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+#deleteFeedbackModal .modal-custom-btn#deleteFeedbackSubmitBtn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  #deleteFeedbackModal .modal-custom {
+    max-width: 340px;
+    padding: 20px 16px 16px;
+  }
+  #deleteFeedbackModal .modal-custom-content h3 {
+    font-size: 1rem;
+  }
+  #deleteFeedbackModal .modal-custom-content p {
+    font-size: 0.85rem;
+  }
+}
