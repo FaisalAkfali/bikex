@@ -1,12 +1,5 @@
 /* ===========================================================
    Bike.X — dashboard.js (COMPLETE)
-   ALL localStorage calls replaced with DataService
-   Custom modals for all confirmations
-   ✅ Full Arabic/English support
-   ✅ Category-aware edit forms
-   ✅ Region + City in edit form
-   ✅ Category names translated
-   ✅ Badge classes for positioning
    =========================================================== */
 
 let currentUser = null;
@@ -34,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function() {
   if (currentUser.role === "admin") {
     loadUsers();
     updateAdminStats();
+    loadDeletionFeedbackStats();
   }
   
   setupNavigation();
@@ -72,7 +66,6 @@ function updateAvatarDisplay(user) {
   }
 }
 
-/* ---------- AVATAR UPLOAD ---------- */
 function setupAvatarUpload() {
   const uploadBtn = document.getElementById("avatarUploadBtn");
   const fileInput = document.getElementById("avatarInput");
@@ -87,7 +80,7 @@ function setupAvatarUpload() {
     
     if (!file.type.startsWith('image/')) {
       showModal(
-        t("invalidImageType") || "Please select a valid image file (JPEG, PNG, GIF).",
+        t("invalidImageType") || "Please select a valid image file.",
         t("invalidFile") || "Invalid File",
         "error",
         "OK",
@@ -139,7 +132,6 @@ function setupAvatarUpload() {
   });
 }
 
-/* ---------- LOAD LISTINGS ---------- */
 function loadListings() {
   allListings = DataService.getAllListings();
   renderUserListings();
@@ -149,20 +141,17 @@ function loadListings() {
   }
 }
 
-/* ---------- LOAD USERS ---------- */
 function loadUsers() {
   allUsers = DataService.getUsers();
   renderAdminUsers();
 }
 
-/* ---------- UPDATE ADMIN STATS ---------- */
 function updateAdminStats() {
   document.getElementById("totalListings").textContent = allListings.length;
   document.getElementById("totalUsers").textContent = allUsers.length;
   document.getElementById("totalAdmins").textContent = allUsers.filter(u => u.role === "admin").length;
 }
 
-/* ---------- RENDER USER LISTINGS ---------- */
 function renderUserListings() {
   const container = document.getElementById("userListings");
   
@@ -245,8 +234,8 @@ function renderUserListings() {
           <div class="card-price mono">${priceDisplay}</div>
           <div class="card-meta">${metaHTML}</div>
           <div class="card-actions">
-            <button class="btn btn-edit" onclick="editListing('${l.id}')"><i class="fa-solid fa-pen-to-square" style="color: rgb(63, 203, 158);"></i> ${t("edit")}</button>
-            <button class="btn btn-delete" onclick="deleteListing('${l.id}')"><i class="fa-solid fa-trash" style="color: rgb(255, 107, 94);"></i> ${t("delete")}</button>
+            <button class="btn btn-edit" onclick="editListing('${l.id}')">✏️ ${t("edit")}</button>
+            <button class="btn btn-delete" onclick="deleteListing('${l.id}')">🗑️ ${t("delete")}</button>
           </div>
         </div>
       </div>
@@ -254,7 +243,6 @@ function renderUserListings() {
   }).join("");
 }
 
-/* ---------- RENDER ADMIN LISTINGS ---------- */
 function renderAdminListings() {
   const container = document.getElementById("adminListings");
   
@@ -321,8 +309,8 @@ function renderAdminListings() {
           <div class="card-price mono">${priceDisplay}</div>
           <div class="card-meta">${metaHTML}</div>
           <div class="card-actions">
-            <button class="btn btn-edit" onclick="editListing('${l.id}')"><i class="fa-solid fa-pen-to-square" style="color: rgb(63, 203, 158);"></i> ${t("edit")}</button>
-            <button class="btn btn-delete" onclick="deleteListing('${l.id}')"><i class="fa-solid fa-trash" style="color: rgb(255, 107, 94);"></i> ${t("delete")}</button>
+            <button class="btn btn-edit" onclick="editListing('${l.id}')">✏️ ${t("edit")}</button>
+            <button class="btn btn-delete" onclick="deleteListing('${l.id}')">🗑️ ${t("delete")}</button>
           </div>
         </div>
       </div>
@@ -330,7 +318,6 @@ function renderAdminListings() {
   }).join("");
 }
 
-/* ---------- RENDER ADMIN USERS ---------- */
 function renderAdminUsers() {
   const tbody = document.getElementById("adminUsersBody");
   
@@ -350,13 +337,196 @@ function renderAdminUsers() {
           `<button class="btn btn-remove-admin" onclick="removeAdmin('${u.email}')">${t("removeAdmin")}</button>` :
           `<button class="btn btn-make-admin" onclick="makeAdmin('${u.email}')">${t("makeAdmin")}</button>`
         }
-        ${u.email !== 'admin@biikex.sa' ? `<button class="btn btn-delete" onclick="deleteUser('${u.email}')"><i class="fa-solid fa-trash" style="color: rgb(255, 107, 94);"></i></button>` : ''}
+        ${u.email !== 'admin@biikex.sa' ? `<button class="btn btn-delete" onclick="deleteUser('${u.email}')">🗑️</button>` : ''}
       </td>
     </tr>
   `).join("");
 }
 
-/* ---------- CATEGORY-AWARE EDIT LISTING (WITH REGION+CITY+COMMENTS) ---------- */
+/* ============================================================
+   DELETION FEEDBACK
+   ============================================================ */
+
+function deleteListing(id) {
+  window._pendingDeleteId = id;
+  showDeleteFeedbackModal();
+}
+
+function showDeleteFeedbackModal() {
+  const overlay = document.getElementById("deleteFeedbackModal");
+  if (!overlay) {
+    console.error("deleteFeedbackModal not found! Fallback to direct delete.");
+    confirmDeletion(window._pendingDeleteId);
+    return;
+  }
+  
+  const reasonSelect = document.getElementById("deleteReason");
+  const otherWrap = document.getElementById("deleteReasonOtherWrap");
+  const otherInput = document.getElementById("deleteReasonOtherInput");
+  if (reasonSelect) reasonSelect.value = "";
+  if (otherWrap) otherWrap.style.display = "none";
+  if (otherInput) otherInput.value = "";
+  
+  overlay.classList.add("active");
+  document.body.style.overflow = "hidden";
+  
+  if (reasonSelect) {
+    reasonSelect.onchange = function() {
+      const wrap = document.getElementById("deleteReasonOtherWrap");
+      if (this.value === "other") {
+        wrap.style.display = "block";
+      } else {
+        wrap.style.display = "none";
+      }
+    };
+  }
+  
+  const cancelBtn = document.getElementById("deleteFeedbackCancelBtn");
+  if (cancelBtn) {
+    cancelBtn.onclick = function() {
+      hideFeedbackModal();
+      window._pendingDeleteId = null;
+    };
+  }
+  
+  const submitBtn = document.getElementById("deleteFeedbackSubmitBtn");
+  if (submitBtn) {
+    submitBtn.onclick = function() {
+      const reason = document.getElementById("deleteReason").value;
+      if (!reason) {
+        showModal(
+          t("deleteFeedbackRequired") || "Please select a reason to delete.",
+          "⚠️ " + (t("missingInformation") || "Missing Information"),
+          "error",
+          "OK",
+          false
+        );
+        return;
+      }
+      
+      let reasonOther = null;
+      if (reason === "other") {
+        reasonOther = document.getElementById("deleteReasonOtherInput").value.trim();
+        if (!reasonOther) {
+          showModal(
+            t("deleteReasonOtherRequired") || "Please specify your reason.",
+            "⚠️ " + (t("missingInformation") || "Missing Information"),
+            "error",
+            "OK",
+            false
+          );
+          return;
+        }
+      }
+      
+      const listing = allListings.find(l => l.id === window._pendingDeleteId);
+      if (listing) {
+        let listingTitle = '';
+        if (listing.category === 'motorcycles') {
+          const brandDisplay = typeof brandLabel !== 'undefined' ? brandLabel(listing.brand) : listing.brand;
+          listingTitle = `${listing.year || ''} ${brandDisplay || ''} ${listing.model || ''}`.trim() || listing.title || 'Listing';
+        } else {
+          listingTitle = listing.title || listing.subtitle || 'Listing';
+        }
+        
+        DataService.saveDeletionFeedback({
+          listingId: listing.id,
+          listingTitle: listingTitle,
+          reason: reason,
+          reasonOther: reasonOther,
+          deletedBy: currentUser ? currentUser.name : 'Unknown'
+        });
+      }
+      
+      hideFeedbackModal();
+      confirmDeletion(window._pendingDeleteId);
+    };
+  }
+}
+
+function hideFeedbackModal() {
+  const overlay = document.getElementById("deleteFeedbackModal");
+  if (overlay) overlay.classList.remove("active");
+  document.body.style.overflow = "";
+}
+
+function confirmDeletion(id) {
+  const listing = allListings.find(l => l.id === id);
+  if (!listing) {
+    hideFeedbackModal();
+    return;
+  }
+  
+  if (!listing.id.startsWith("U") && currentUser.role !== "admin") {
+    showModal(t("permissionDenied"), t("permissionDenied"), "error", "OK", false);
+    window._pendingDeleteId = null;
+    hideFeedbackModal();
+    return;
+  }
+  
+  if (listing.id.startsWith("U")) {
+    if (listing.creatorEmail && listing.creatorEmail !== currentUser.email) {
+      showModal(t("permissionDenied"), t("permissionDenied"), "error", "OK", false);
+      window._pendingDeleteId = null;
+      hideFeedbackModal();
+      return;
+    }
+  }
+  
+  DataService.deleteListing(id);
+  loadListings();
+  if (currentUser.role === "admin") updateAdminStats();
+  
+  window._pendingDeleteId = null;
+  hideFeedbackModal();
+}
+
+function loadDeletionFeedbackStats() {
+  const stats = DataService.getDeletionFeedbackStats();
+  const feedbacks = DataService.getDeletionFeedback();
+  
+  const container = document.getElementById("deletionFeedbackStats");
+  if (!container) return;
+  
+  container.innerHTML = `
+    <div class="admin-section">
+      <h3>${t("deletionFeedbackTitle") || "Deletion Feedback"}</h3>
+      <div class="admin-stats">
+        <div class="stat-card">
+          <span class="stat-number">${stats.total}</span>
+          <span class="stat-label">${t("totalDeletions") || "Total Deletions"}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">${stats.soldOutside}</span>
+          <span class="stat-label">${t("deleteReasonSoldOutside") || "Sold Outside"}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">${stats.canceled}</span>
+          <span class="stat-label">${t("deleteReasonCanceled") || "Canceled"}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">${stats.other}</span>
+          <span class="stat-label">${t("deleteReasonOther") || "Other"}</span>
+        </div>
+      </div>
+      <div style="margin-top:12px; max-height:300px; overflow-y:auto;">
+        ${feedbacks.length > 0 ? feedbacks.map(f => `
+          <div style="padding:8px 12px; border-bottom:1px solid var(--border); font-size:0.85rem;">
+            <strong>${f.listingTitle}</strong>
+            <span style="color:var(--muted);">— ${f.reason}</span>
+            ${f.reasonOther ? `<span style="color:var(--muted);"> (${f.reasonOther})</span>` : ''}
+            <span style="color:var(--muted);font-size:0.7rem;display:block;">${new Date(f.deletedAt).toLocaleDateString()}</span>
+          </div>
+        `).join('') : '<p style="color:var(--muted);text-align:center;padding:20px;">' + t("noDeletionFeedback") + '</p>'}
+      </div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   EDIT LISTING (simplified)
+   ============================================================ */
+
 function editListing(id) {
   const listing = allListings.find(l => l.id === id);
   if (!listing) return;
@@ -379,6 +549,7 @@ function editListing(id) {
   const category = listing.category || 'motorcycles';
   const categoryKey = "category" + category.charAt(0).toUpperCase() + category.slice(1);
   const categoryLabel = t(categoryKey) || category;
+  
   let formHtml = '';
   
   const currentRegion = getRegionForCity(listing.city);
@@ -574,7 +745,6 @@ function editListing(id) {
     `;
   }
   
-  // ===== FINAL MODAL HTML WITH COMMENTS TOGGLE =====
   modal.innerHTML = `
     <div class="modal-head">
       <h2>${t("editListing")} (${categoryLabel})</h2>
@@ -584,7 +754,6 @@ function editListing(id) {
       <form class="edit-form" id="editForm">
         ${formHtml}
         
-        <!-- ===== COMMENTS TOGGLE ===== -->
         <div class="form-row full" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
           <div class="field">
             <label data-i18n="labelCommentsToggle">${t("labelCommentsToggle")}</label>
@@ -618,7 +787,6 @@ function editListing(id) {
     saveListingEdit(id);
   });
   
-  // --- Event listeners for region and brand ---
   const regionSelect = document.getElementById("editRegion");
   const citySelect = document.getElementById("editCity");
   
@@ -656,7 +824,6 @@ function editListing(id) {
   }
 }
 
-/* ---------- SAVE LISTING EDIT ---------- */
 function saveListingEdit(id) {
   const listing = allListings.find(l => l.id === id);
   if (!listing) return;
@@ -673,20 +840,17 @@ function saveListingEdit(id) {
   const desc = document.getElementById("editDesc");
   if (desc) updated.desc = desc.value.trim();
   
-  // ✅ Save condition
   const conditionRadios = document.querySelectorAll('input[name="editCondition"]');
   if (conditionRadios.length) {
     const checked = document.querySelector('input[name="editCondition"]:checked');
     if (checked) updated.condition = checked.value;
   }
   
-  // ✅ Save comments toggle
   const commentsEnabledRadio = document.querySelector('input[name="editCommentsEnabled"]:checked');
   if (commentsEnabledRadio) {
     updated.commentsEnabled = commentsEnabledRadio.value === "yes";
   }
   
-  // --- Category-specific fields ---
   if (category === 'motorcycles') {
     const brandSel = document.getElementById("editBrand");
     let brand = brandSel.value;
@@ -741,7 +905,6 @@ function saveListingEdit(id) {
     }
   }
   
-  // Save the updated listing
   if (listing.id.startsWith("U")) {
     DataService.updateListing(id, updated);
   } else if (currentUser.role === "admin") {
@@ -751,60 +914,6 @@ function saveListingEdit(id) {
   closeModal();
   loadListings();
   if (currentUser.role === "admin") updateAdminStats();
-}
-
-/* ---------- DELETE LISTING ---------- */
-function deleteListing(id) {
-  showModal(
-    t("confirmDeleteMessage"),
-    t("confirmDeleteTitle"),
-    "error",
-    t("confirmDeleteConfirm"),
-    t("confirmDeleteCancel")
-  );
-  
-  window._pendingDeleteId = id;
-  
-  let okBtn = document.getElementById('modalOkBtn');
-  if (!okBtn) {
-    console.error('Modal OK button not found!');
-    return;
-  }
-  
-  const newOkBtn = okBtn.cloneNode(true);
-  okBtn.parentNode.replaceChild(newOkBtn, okBtn);
-  
-  newOkBtn.addEventListener('click', function() {
-    const idToDelete = window._pendingDeleteId;
-    if (!idToDelete) return;
-    
-    const listing = allListings.find(l => l.id === idToDelete);
-    if (!listing) {
-      hideModal();
-      return;
-    }
-    
-    if (!listing.id.startsWith("U") && currentUser.role !== "admin") {
-      showModal(t("permissionDenied"), t("permissionDenied"), "error", "OK", false);
-      window._pendingDeleteId = null;
-      return;
-    }
-    
-    if (listing.id.startsWith("U")) {
-      if (listing.creatorEmail && listing.creatorEmail !== currentUser.email) {
-        showModal(t("permissionDenied"), t("permissionDenied"), "error", "OK", false);
-        window._pendingDeleteId = null;
-        return;
-      }
-    }
-    
-    DataService.deleteListing(idToDelete);
-    loadListings();
-    if (currentUser.role === "admin") updateAdminStats();
-    
-    window._pendingDeleteId = null;
-    hideModal();
-  });
 }
 
 /* ---------- ADMIN FUNCTIONS ---------- */
@@ -991,7 +1100,6 @@ function showSettingsMessage(msg, type) {
   }, 5000);
 }
 
-/* ---------- NAVIGATION ---------- */
 function setupNavigation() {
   document.querySelectorAll(".nav-btn[data-tab]").forEach(btn => {
     btn.addEventListener("click", function() {
@@ -1027,7 +1135,6 @@ function toggleTheme() {
   localStorage.setItem("moto_theme", next);
 }
 
-/* ---------- DASHBOARD MESSAGES ---------- */
 function loadDashboardMessages() {
   const container = document.getElementById("dashboardMessages");
   const badge = document.getElementById("messagesCountBadge");
