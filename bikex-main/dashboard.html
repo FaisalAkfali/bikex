@@ -230,6 +230,8 @@
           </table>
         </div>
       </div>
+      
+      <div id="deletionFeedbackStats" class="admin-section" style="margin-top:24px;"></div>
     </div>
   </div>
 </div>
@@ -245,7 +247,7 @@
   </div>
 </footer>
 
-<!-- ===== CUSTOM MODAL (Enhanced with Cancel Button) ===== -->
+<!-- ===== CUSTOM MODAL ===== -->
 <div class="modal-overlay-custom" id="customModal">
   <div class="modal-custom">
     <div class="modal-custom-icon">
@@ -262,6 +264,46 @@
     <div style="display:flex; gap:10px; margin-top:16px; width:100%;">
       <button class="btn btn-solid modal-custom-btn" id="modalOkBtn" style="flex:1;">OK</button>
       <button class="btn modal-custom-btn" id="modalCancelBtn" style="flex:1; background:var(--surface-2); border-color:var(--border);">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DELETION FEEDBACK MODAL ===== -->
+<div class="modal-overlay-custom" id="deleteFeedbackModal">
+  <div class="modal-custom">
+    <div class="modal-custom-icon">
+      <i class="fas fa-question-circle" style="font-size:32px;color:var(--accent);"></i>
+    </div>
+    <div class="modal-custom-content">
+      <h3 data-i18n="deleteFeedbackTitle">Why are you deleting this listing?</h3>
+      <p data-i18n="deleteFeedbackSubtitle">Your feedback helps us improve Bike.X</p>
+      
+      <div style="text-align:left; margin-top:16px;">
+        <div class="field" style="margin-bottom:12px;">
+          <label style="display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin-bottom:6px;" data-i18n="deleteReason">Reason for deletion</label>
+          <select id="deleteReason" style="width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid var(--border); background:var(--bg); color:var(--text); font-size:0.9rem; font-family:inherit;">
+            <option value="" disabled selected data-i18n="selectReason">Select a reason</option>
+            <option value="sold_outside" data-i18n="deleteReasonSoldOutside">Sold outside the site</option>
+            <option value="canceled" data-i18n="deleteReasonCanceled">Canceled the sale</option>
+            <option value="other" data-i18n="deleteReasonOther">Other</option>
+          </select>
+        </div>
+        
+        <div id="deleteReasonOtherWrap" style="display:none;">
+          <div class="field" style="margin-bottom:8px;">
+            <label style="display:block; font-size:0.78rem; font-weight:600; color:var(--muted); margin-bottom:6px;" data-i18n="deleteReasonOtherLabel">Please specify</label>
+            <textarea id="deleteReasonOtherInput" rows="2" style="width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid var(--border); background:var(--bg); color:var(--text); font-size:0.9rem; font-family:inherit; resize:vertical; min-height:60px;"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex; gap:10px; margin-top:16px; width:100%;">
+      <button class="btn modal-custom-btn" id="deleteFeedbackCancelBtn" style="flex:1; background:var(--surface-2); border-color:var(--border); color:var(--text);">
+        <i class="fas fa-times"></i> <span data-i18n="cancelBtn">Cancel</span>
+      </button>
+      <button class="btn btn-solid modal-custom-btn" id="deleteFeedbackSubmitBtn" style="flex:1; background:var(--danger); color:#fff; border-color:var(--danger);">
+        <i class="fas fa-trash"></i> <span data-i18n="deleteFeedbackSubmit">Delete</span>
+      </button>
     </div>
   </div>
 </div>
