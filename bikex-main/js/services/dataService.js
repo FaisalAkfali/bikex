@@ -123,27 +123,27 @@ const DataService = {
     return JSON.parse(localStorage.getItem("moto_messages") || "[]");
   },
 
-sendMessage(message) {
-  const messages = this.getMessages();
-  const newMsg = {
-    ...message,
-    id: "M" + Date.now(),
-    timestamp: new Date().toISOString(),
-    read: false,
-    delivered: false,
-    status: 'sending',
-    replyToId: message.replyToId || null,  // ✅ ADD THIS
-    replyToMessage: message.replyToMessage || null  // ✅ ADD THIS
-  };
-  messages.push(newMsg);
-  localStorage.setItem("moto_messages", JSON.stringify(messages));
-  
-  setTimeout(() => {
-    this.markMessageDelivered(newMsg.id);
-  }, 500);
-  
-  return newMsg;
-},
+  sendMessage(message) {
+    const messages = this.getMessages();
+    const newMsg = {
+      ...message,
+      id: "M" + Date.now(),
+      timestamp: new Date().toISOString(),
+      read: false,
+      delivered: false,
+      status: 'sending',
+      replyToId: message.replyToId || null,
+      replyToMessage: message.replyToMessage || null
+    };
+    messages.push(newMsg);
+    localStorage.setItem("moto_messages", JSON.stringify(messages));
+    
+    setTimeout(() => {
+      this.markMessageDelivered(newMsg.id);
+    }, 500);
+    
+    return newMsg;
+  },
 
   markMessageDelivered(messageId) {
     const messages = this.getMessages();
@@ -167,7 +167,6 @@ sendMessage(message) {
     });
     if (updated) {
       localStorage.setItem("moto_messages", JSON.stringify(messages));
-      // Simulate read receipt - in real app, this would notify sender via WebSocket
       return true;
     }
     return false;
@@ -186,19 +185,53 @@ sendMessage(message) {
     return all[listingId] || [];
   },
 
-addComment(listingId, commentData) {
-  const all = JSON.parse(localStorage.getItem("moto_comments") || "{}");
-  if (!all[listingId]) all[listingId] = [];
-  const newComment = {
-    ...commentData,
-    id: "C" + Date.now(),
-    date: new Date().toISOString(),
-    replies: [] // ✅ Add replies array for nested comments
-  };
-  all[listingId].push(newComment);
-  localStorage.setItem("moto_comments", JSON.stringify(all));
-  return all[listingId];
-}
+  addComment(listingId, commentData) {
+    const all = JSON.parse(localStorage.getItem("moto_comments") || "{}");
+    if (!all[listingId]) all[listingId] = [];
+    const newComment = {
+      ...commentData,
+      id: "C" + Date.now(),
+      date: new Date().toISOString(),
+      replies: []
+    };
+    all[listingId].push(newComment);
+    localStorage.setItem("moto_comments", JSON.stringify(all));
+    return all[listingId];
+  },
+
+  // ============================================================
+  // ✅ DELETION FEEDBACK (FIXED - INSIDE DataService)
+  // ============================================================
+  getDeletionFeedback() {
+    return JSON.parse(localStorage.getItem("moto_deletion_feedback") || "[]");
+  },
+
+  saveDeletionFeedback(feedback) {
+    const feedbacks = this.getDeletionFeedback();
+    const newFeedback = {
+      id: "DF" + Date.now(),
+      listingId: feedback.listingId,
+      listingTitle: feedback.listingTitle,
+      reason: feedback.reason,
+      reasonOther: feedback.reasonOther || null,
+      deletedBy: feedback.deletedBy,
+      deletedAt: new Date().toISOString()
+    };
+    feedbacks.push(newFeedback);
+    localStorage.setItem("moto_deletion_feedback", JSON.stringify(feedbacks));
+    return newFeedback;
+  },
+
+  getDeletionFeedbackStats() {
+    const feedbacks = this.getDeletionFeedback();
+    const stats = {
+      total: feedbacks.length,
+      soldOutside: feedbacks.filter(f => f.reason === 'sold_outside').length,
+      canceled: feedbacks.filter(f => f.reason === 'canceled').length,
+      other: feedbacks.filter(f => f.reason === 'other').length
+    };
+    return stats;
+  }
 };
 
 // Make it globally available to all your HTML pages
