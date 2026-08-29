@@ -4,6 +4,7 @@
    - Images stored as base64 (persist across pages)
    - Condition (New/Used) visible for all categories
    - Category‑aware fields
+   - Saves creatorName + creatorAvatar for real seller display
    =========================================================== */
 
 let pendingImageFiles = [];
@@ -11,16 +12,16 @@ let sellCategory = "motorcycles";
 
 const SELL_COPY = {
   en: {
-    motorcycles: { title: "List your motorcycle", subtitle: "Fill in the details below." },
-    parts: { title: "List a part", subtitle: "Fill in the details below to list a motorcycle part or component." },
-    gear: { title: "List gear or an accessory", subtitle: "Fill in the details below to list riding gear or an accessory." },
-    services: { title: "List a service", subtitle: "Fill in the details below to list a service." }
+    motorcycles: { title: "List your motorcycle", subtitle: "Fill in the details below. Your listing appears at the top of the homepage instantly — no account needed for this demo." },
+    parts: { title: "List a part", subtitle: "Fill in the details below to list a motorcycle part or component. Your listing appears instantly on the homepage." },
+    gear: { title: "List gear or an accessory", subtitle: "Fill in the details below to list riding gear or an accessory. Your listing appears instantly on the homepage." },
+    services: { title: "List a service", subtitle: "Fill in the details below to list a service. Your listing appears instantly on the homepage." }
   },
   ar: {
-    motorcycles: { title: "أضف دراجتك النارية", subtitle: "املأ التفاصيل أدناه.ا" },
-    parts: { title: "أضف قطعة غيار", subtitle: "املأ التفاصيل أدناه لإضافة قطعة غيار." },
-    gear: { title: "أضف ملابس أو مستلزمات", subtitle: "املأ التفاصيل أدناه لإضافة ملابس أو مستلزم." },
-    services: { title: "أضف خدمة", subtitle: "املأ التفاصيل أدناه لإضافة خدمة." }
+    motorcycles: { title: "أضف دراجتك النارية", subtitle: "املأ التفاصيل أدناه. سيظهر إعلانك أعلى الصفحة الرئيسية فورًا — لا حاجة لحساب في هذا العرض التجريبي." },
+    parts: { title: "أضف قطعة غيار", subtitle: "املأ التفاصيل أدناه لإضافة قطعة غيار أو مكوّن. سيظهر إعلانك فورًا في الصفحة الرئيسية." },
+    gear: { title: "أضف ملابس أو مستلزمات", subtitle: "املأ التفاصيل أدناه لإضافة ملابس ركوب أو مستلزم. سيظهر إعلانك فورًا في الصفحة الرئيسية." },
+    services: { title: "أضف خدمة", subtitle: "املأ التفاصيل أدناه لإضافة خدمة. سيظهر إعلانك فورًا في الصفحة الرئيسية." }
   }
 };
 
@@ -159,7 +160,7 @@ function setupSellCategorySwitcher() {
       });
     });
 
-    // Condition row is always visible (fix)
+    // Condition row is always visible
     if (conditionRow) conditionRow.style.display = "";
 
     // Update price label for services
@@ -195,7 +196,7 @@ function setupSellCategorySwitcher() {
   applySellCategoryUI();
 }
 
-/* ---------- IMAGE UPLOAD (preview only, base64 conversion on submit) ---------- */
+/* ---------- IMAGE UPLOAD ---------- */
 function setupImageUpload() {
   const dropzone = document.getElementById("dropzone");
   const fileInput = document.getElementById("imageInput");
@@ -311,7 +312,9 @@ function handleSellSubmit(e) {
   const phoneVisible = document.querySelector('input[name="phoneVisible"]:checked').value === "yes";
   const enteredDesc = document.getElementById("desc").value.trim();
 
+  // ✅ Get user + full user (for avatar)
   const user = DataService.getSession();
+  const fullUser = DataService.getCurrentUser();
 
   if (!enteredDesc) {
     showModal("Please fill in all fields.", "⚠️ Missing Information", "error");
@@ -370,7 +373,8 @@ function handleSellSubmit(e) {
         images: imageDataUrls,
         createdAt: new Date().toISOString(),
         creatorEmail: user ? user.email : null,
-        creatorName: user ? user.name : null
+        creatorName: user ? user.name : null,
+        creatorAvatar: fullUser ? fullUser.avatar : null  // ✅ NEW
       };
     } else if (sellCategory === "parts") {
       const partTitle = document.getElementById("partTitle").value.trim();
@@ -397,7 +401,8 @@ function handleSellSubmit(e) {
         images: imageDataUrls,
         createdAt: new Date().toISOString(),
         creatorEmail: user ? user.email : null,
-        creatorName: user ? user.name : null
+        creatorName: user ? user.name : null,
+        creatorAvatar: fullUser ? fullUser.avatar : null  // ✅ NEW
       };
     } else if (sellCategory === "gear") {
       const gearTitle = document.getElementById("gearTitle").value.trim();
@@ -424,7 +429,8 @@ function handleSellSubmit(e) {
         images: imageDataUrls,
         createdAt: new Date().toISOString(),
         creatorEmail: user ? user.email : null,
-        creatorName: user ? user.name : null
+        creatorName: user ? user.name : null,
+        creatorAvatar: fullUser ? fullUser.avatar : null  // ✅ NEW
       };
     } else if (sellCategory === "services") {
       const serviceTypeSel = document.getElementById("serviceType");
@@ -441,14 +447,15 @@ function handleSellSubmit(e) {
         category: "services",
         title: serviceTypeLabel, subtitle: serviceTypeLabel,
         price: price, city: city,
-        condition: condition, // condition is now saved for services too
+        condition: condition,
         commentsEnabled: commentsEnabled, phoneVisible: phoneVisible,
         desc: enteredDesc, descAr: enteredDesc,
         variant: Math.floor(Math.random() * 3),
         images: imageDataUrls,
         createdAt: new Date().toISOString(),
         creatorEmail: user ? user.email : null,
-        creatorName: user ? user.name : null
+        creatorName: user ? user.name : null,
+        creatorAvatar: fullUser ? fullUser.avatar : null  // ✅ NEW
       };
     }
 
