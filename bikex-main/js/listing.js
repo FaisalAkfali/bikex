@@ -4,6 +4,7 @@
    ✅ Phone visibility toggle
    ✅ Chat enable/disable toggle
    ✅ Both buttons hide when disabled
+   ✅ Real seller name + avatar
    =========================================================== */
 
 let currentListing = null;
@@ -115,7 +116,7 @@ function renderListing(listing) {
           <div class="comment-disabled">
             <i class="fas fa-comment-slash" style="font-size:28px;color:var(--muted);display:block;margin-bottom:10px;"></i>
             <p style="color:var(--muted);font-size:0.95rem;margin:0;">
-              ${t("commentsDisabled") || "Comments are disabled by the seller."}
+              ${t("commentsDisabled") || "💬 Comments are disabled by the seller."}
             </p>
           </div>
         `;
@@ -262,17 +263,38 @@ function renderListing(listing) {
   document.getElementById("listingDescription").textContent = desc || "No description provided.";
 
   // ============================================================
-  // SELLER SECTION (COMPLETE FIXED)
+  // SELLER SECTION (REAL NAME + AVATAR)
   // ============================================================
   const isUserListing = listing.id.startsWith("U");
-  const sellerName = isUserListing ? "Private Seller" : "Dealer";
+  let sellerName = "Dealer";
+  let sellerAvatar = null;
+
+  if (isUserListing) {
+    sellerName = listing.creatorName || "Private Seller";
+    sellerAvatar = listing.creatorAvatar || null;
+  } else {
+    sellerName = "Dealer";
+  }
+
   document.getElementById("sellerName").textContent = sellerName;
-  
-  // Set avatar background color
-  const avatarColor = getAvatarColor(sellerName);
-  document.getElementById("sellerAvatar").style.background = avatarColor;
-  document.getElementById("sellerAvatar").textContent = sellerName.charAt(0);
-  
+
+  // Set avatar
+  const avatarEl = document.getElementById("sellerAvatar");
+  if (sellerAvatar) {
+    avatarEl.innerHTML = `<img src="${sellerAvatar}" alt="${sellerName}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    avatarEl.style.background = "transparent";
+  } else {
+    const avatarColor = getAvatarColor(sellerName);
+    avatarEl.style.background = avatarColor;
+    avatarEl.textContent = sellerName.charAt(0).toUpperCase();
+    avatarEl.style.display = "flex";
+    avatarEl.style.alignItems = "center";
+    avatarEl.style.justifyContent = "center";
+    avatarEl.style.fontWeight = "700";
+    avatarEl.style.color = "#fff";
+    avatarEl.style.fontSize = "20px";
+  }
+
   // ---- Phone visibility ----
   const sellerPhone = isUserListing ? (listing.creatorPhone || "+966 5X XXX XXXX") : "+966 5X XXX XXXX";
   const phoneVisible = listing.phoneVisible !== false; // Default: true (show phone)
@@ -390,7 +412,7 @@ function openChatModal(listing) {
     modal.innerHTML = `
       <div class="modal-custom chat-modal">
         <div class="chat-modal-header">
-          <h3 id="chatModalTitle">Chat with Seller</h3>
+          <h3 id="chatModalTitle">💬 Chat with Seller</h3>
           <button class="chat-modal-close" id="chatModalClose">&times;</button>
         </div>
         <div class="chat-modal-messages" id="chatMessages">
@@ -414,7 +436,7 @@ function openChatModal(listing) {
 
   const brandDisplay = typeof brandLabel !== 'undefined' ? brandLabel(listing.brand) : listing.brand;
   const listingTitle = listing.title || `${listing.year || ''} ${brandDisplay || ''} ${listing.model || ''}`.trim() || 'Listing';
-  if (titleEl) titleEl.textContent = `Chat about "${listingTitle}"`;
+  if (titleEl) titleEl.textContent = `💬 Chat about "${listingTitle}"`;
 
   loadChatMessages(listing, messagesEl);
 
@@ -474,14 +496,14 @@ function loadChatMessages(listing, container) {
     const isOwn = msg.from === currentUser.email;
     const senderName = msg.fromName || msg.from;
     
-    // Get avatar
+    // Get avatar or generate initials
     const avatarColor = getAvatarColor(senderName);
     const initials = getUserInitials(senderName);
     const avatarHtml = msg.fromAvatar 
       ? `<img src="${msg.fromAvatar}" alt="${senderName}" class="chat-avatar-img">`
       : `<span class="chat-avatar-initials" style="background:${avatarColor}">${initials}</span>`;
     
-    // Status indicator
+    // Status indicator for own messages
     let statusHtml = '';
     if (isOwn) {
       const status = DataService.getMessageStatus(msg);
@@ -496,43 +518,15 @@ function loadChatMessages(listing, container) {
       }
     }
     
-    // ===== REPLY CONTEXT =====
-    let replyContextHtml = '';
-    if (msg.replyToId && msg.replyToMessage) {
-      const repliedMsg = listingMessages.find(m => m.id === msg.replyToId);
-      if (repliedMsg) {
-        const repliedText = repliedMsg.message.length > 40 
-          ? repliedMsg.message.substring(0, 40) + '...' 
-          : repliedMsg.message;
-        replyContextHtml = `
-          <div class="chat-reply-context">
-            <span class="reply-arrow">↩️</span>
-            <span>${t("replyingTo") || "Replying to"}: "${escapeHtml(repliedText)}"</span>
-          </div>
-        `;
-      }
-    }
-    
-    // ===== REPLY BUTTON =====
-    const replyBtnHtml = `
-      <button class="chat-reply-btn" data-msg-id="${msg.id}" data-msg-text="${escapeHtml(msg.message)}">
-        <i class="fas fa-reply"></i> ${t("reply") || "Reply"}
-      </button>
-    `;
-    
     return `
       <div class="chat-message-wrapper ${isOwn ? 'own' : 'other'}">
         <div class="chat-avatar">${avatarHtml}</div>
-        <div class="chat-message ${isOwn ? 'chat-message-own' : 'chat-message-other'} ${msg.replyToId ? 'is-reply' : ''}">
-          ${replyContextHtml}
+        <div class="chat-message ${isOwn ? 'chat-message-own' : 'chat-message-other'}">
           <div class="chat-message-sender">${isOwn ? 'You' : senderName}</div>
           <div class="chat-message-text">${escapeHtml(msg.message)}</div>
           <div class="chat-message-time">
             ${new Date(msg.timestamp).toLocaleTimeString()}
             ${statusHtml}
-          </div>
-          <div style="display:flex; justify-content:flex-end; margin-top:4px;">
-            ${replyBtnHtml}
           </div>
         </div>
       </div>
@@ -548,30 +542,6 @@ function loadChatMessages(listing, container) {
   setTimeout(() => {
     loadChatMessages(listing, container);
   }, 500);
-
-  // ===== ATTACH REPLY EVENT LISTENERS =====
-  container.querySelectorAll('.chat-reply-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const msgId = this.dataset.msgId;
-      const msgText = this.dataset.msgText;
-      const inputEl = document.getElementById("chatInput");
-      if (inputEl) {
-        // Pre-fill input with @mention style
-        const senderName = this.closest('.chat-message-wrapper').querySelector('.chat-message-sender').textContent;
-        inputEl.value = `@${senderName}: `;
-        inputEl.focus();
-        // Store reply context for sending
-        window._replyToId = msgId;
-        window._replyToMessage = msgText;
-        // Show visual feedback
-        this.innerHTML = '<i class="fas fa-check"></i> ' + (t("replying") || "Replying...");
-        setTimeout(() => {
-          this.innerHTML = '<i class="fas fa-reply"></i> ' + (t("reply") || "Reply");
-        }, 1500);
-      }
-    });
-  });
 }
 
 function sendChatMessage(listing, inputEl, messagesEl) {
@@ -587,15 +557,8 @@ function sendChatMessage(listing, inputEl, messagesEl) {
   const sellerEmail = listing.creatorEmail || listing.email || "seller@example.com";
   const sellerName = listing.creatorName || "Seller";
   
+  // Get full user to include avatar
   const fullUser = DataService.getCurrentUser();
-
-  // ===== CHECK FOR REPLY =====
-  let replyToId = window._replyToId || null;
-  let replyToMessage = window._replyToMessage || null;
-  
-  // Clear reply context after sending
-  window._replyToId = null;
-  window._replyToMessage = null;
 
   const newMessage = {
     listingId: listing.id,
@@ -604,11 +567,10 @@ function sendChatMessage(listing, inputEl, messagesEl) {
     fromAvatar: fullUser ? fullUser.avatar : null,
     to: sellerEmail,
     toName: sellerName,
-    message: message,
-    replyToId: replyToId,
-    replyToMessage: replyToMessage
+    message: message
   };
 
+  // Send message (no modal - status indicators show delivery)
   DataService.sendMessage(newMessage);
 
   inputEl.value = "";
@@ -809,165 +771,33 @@ function renderComments() {
   if (comments.length === 0) {
     container.innerHTML = `
       <div class="comment-empty">
-        <p>${typeof t !== 'undefined' ? t("noCommentsYet") : "No comments yet."}</p>
+        <p>${typeof t !== 'undefined' ? t("noCommentsYet") : "No comments yet. Be the first to comment!"}</p>
       </div>
     `;
     return;
   }
   
   container.innerHTML = comments.map(comment => {
+    // Get avatar or generate initials
     const avatarColor = getAvatarColor(comment.author || "User");
     const initials = getUserInitials(comment.author || "User");
     const avatarHtml = comment.avatar 
       ? `<img src="${comment.avatar}" alt="${comment.author}" class="comment-avatar-img">`
       : `<span class="comment-avatar-initials" style="background:${avatarColor}">${initials}</span>`;
     
-    // ===== REPLY BUTTON =====
-    const replyBtnHtml = `
-      <button class="comment-reply-btn" data-comment-id="${comment.id}" data-author="${escapeHtml(comment.author)}">
-        <i class="fas fa-reply"></i> ${t("reply") || "Reply"}
-      </button>
-    `;
-    
-    // ===== RENDER REPLIES =====
-    let repliesHtml = '';
-    if (comment.replies && comment.replies.length > 0) {
-      repliesHtml = `
-        <div class="comment-replies">
-          ${comment.replies.map(reply => {
-            const replyAvatarColor = getAvatarColor(reply.author || "User");
-            const replyInitials = getUserInitials(reply.author || "User");
-            const replyAvatarHtml = reply.avatar 
-              ? `<img src="${reply.avatar}" alt="${reply.author}" class="comment-avatar-img">`
-              : `<span class="comment-avatar-initials" style="background:${replyAvatarColor}">${replyInitials}</span>`;
-            
-            return `
-              <div class="comment-item comment-reply">
-                <div class="comment-header">
-                  <div class="comment-user">
-                    <div class="comment-avatar">${replyAvatarHtml}</div>
-                    <span class="comment-author">${escapeHtml(reply.author)}</span>
-                  </div>
-                  <span class="comment-date">${new Date(reply.date).toLocaleDateString()} ${new Date(reply.date).toLocaleTimeString()}</span>
-                </div>
-                <div class="comment-body">${escapeHtml(reply.text)}</div>
-              </div>
-            `;
-          }).join('')}
-        </div>
-      `;
-    }
-    
     return `
-      <div class="comment-item" data-comment-id="${comment.id}">
+      <div class="comment-item">
         <div class="comment-header">
           <div class="comment-user">
             <div class="comment-avatar">${avatarHtml}</div>
             <span class="comment-author">${escapeHtml(comment.author)}</span>
           </div>
-          <div class="comment-actions">
-            <span class="comment-date">${new Date(comment.date).toLocaleDateString()} ${new Date(comment.date).toLocaleTimeString()}</span>
-            ${replyBtnHtml}
-          </div>
+          <span class="comment-date">${new Date(comment.date).toLocaleDateString()} ${new Date(comment.date).toLocaleTimeString()}</span>
         </div>
         <div class="comment-body">${escapeHtml(comment.text)}</div>
-        ${repliesHtml}
-        <div class="comment-reply-form-wrapper" id="replyForm_${comment.id}" style="display:none; margin-top:12px;">
-          <div class="comment-reply-form">
-            <div class="reply-indicator">
-              <span>${t("replyingTo") || "Replying to"} <strong>${escapeHtml(comment.author)}</strong></span>
-              <button class="reply-cancel-btn" data-comment-id="${comment.id}">${t("cancelBtn") || "Cancel"}</button>
-            </div>
-            <div class="comment-form">
-              <textarea id="replyInput_${comment.id}" placeholder="${t("writeReply") || "Write your reply..."}" rows="2"></textarea>
-              <button class="btn btn-solid reply-submit-btn" data-comment-id="${comment.id}" data-parent-author="${escapeHtml(comment.author)}">
-                ${t("postReply") || "Post Reply"}
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
     `;
   }).join('');
-  
-  // ===== ATTACH REPLY EVENT LISTENERS =====
-  document.querySelectorAll('.comment-reply-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const commentId = this.dataset.commentId;
-      const form = document.getElementById(`replyForm_${commentId}`);
-      if (form) {
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        const textarea = document.getElementById(`replyInput_${commentId}`);
-        if (textarea) {
-          setTimeout(() => textarea.focus(), 100);
-        }
-      }
-    });
-  });
-  
-  document.querySelectorAll('.reply-cancel-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const commentId = this.dataset.commentId;
-      const form = document.getElementById(`replyForm_${commentId}`);
-      if (form) form.style.display = 'none';
-    });
-  });
-  
-  document.querySelectorAll('.reply-submit-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const commentId = this.dataset.commentId;
-      const textarea = document.getElementById(`replyInput_${commentId}`);
-      if (textarea && textarea.value.trim()) {
-        submitReply(commentId, textarea.value.trim());
-        textarea.value = '';
-        const form = document.getElementById(`replyForm_${commentId}`);
-        if (form) form.style.display = 'none';
-      } else {
-        showCommentMessage("Please write a reply.", "error");
-      }
-    });
-  });
-}
-
-function submitReply(commentId, text) {
-  const user = DataService.getSession();
-  if (!user) {
-    showCommentMessage("Please log in to reply.", "error");
-    return;
-  }
-  
-  const fullUser = DataService.getCurrentUser();
-  
-  const reply = {
-    author: user.name || "Anonymous",
-    authorEmail: user.email || "",
-    avatar: fullUser ? fullUser.avatar : null,
-    text: text,
-    date: new Date().toISOString()
-  };
-  
-  // Find the comment and add reply
-  const comment = comments.find(c => c.id === commentId);
-  if (!comment) {
-    showCommentMessage("Comment not found.", "error");
-    return;
-  }
-  
-  if (!comment.replies) comment.replies = [];
-  comment.replies.push(reply);
-  
-  // Save back to localStorage
-  const allComments = JSON.parse(localStorage.getItem("moto_comments") || "{}");
-  if (allComments[currentListing.id]) {
-    const commentIndex = allComments[currentListing.id].findIndex(c => c.id === commentId);
-    if (commentIndex !== -1) {
-      allComments[currentListing.id][commentIndex] = comment;
-      localStorage.setItem("moto_comments", JSON.stringify(allComments));
-    }
-  }
-  
-  renderComments();
-  showCommentMessage("Reply posted successfully!", "success");
 }
 
 function setupCommentForm() {
@@ -1025,6 +855,10 @@ function getAvatarColor(name) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
   return colors[Math.abs(hash) % colors.length];
+}
+
+function getUserInitials(name) {
+  return name.split(' ').map(word => word.charAt(0).toUpperCase()).join('').substring(0, 2);
 }
 
 /* ---------- MOBILE MENU ---------- */
