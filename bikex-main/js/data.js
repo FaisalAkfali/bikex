@@ -1,5 +1,5 @@
 /* ===========================================================
-   Bike.X — seed data
+   Bike X — seed data
    No stock photos: every listing renders a generated line-art
    bike so the catalog has one consistent visual identity.
    =========================================================== */
