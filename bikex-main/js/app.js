@@ -1,5 +1,5 @@
 /* ===========================================================
-   Bike.X — app.js (PRODUCTION READY)
+   Bike X — app.js (PRODUCTION READY)
    All console.log statements removed
    =========================================================== */
 
