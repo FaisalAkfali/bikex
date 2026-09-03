@@ -1,5 +1,5 @@
 /* ===========================================================
-   Bike.X — sell.js (COMPLETE)
+   Bike X — sell.js (COMPLETE)
    - Region + City (region‑first)
    - Images stored as base64 (persist across pages)
    - Condition (New/Used) visible for all categories
