@@ -1,5 +1,5 @@
 /* ===========================================================
-   Bike.X — dashboard.js (COMPLETE)
+   Bike X — dashboard.js (COMPLETE)
    =========================================================== */
 
 let currentUser = null;
