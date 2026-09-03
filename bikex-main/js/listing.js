@@ -1,5 +1,5 @@
 /* ===========================================================
-   Bike.X — listing.js (COMPLETE REFACTORED)
+   Bike X — listing.js (COMPLETE REFACTORED)
    All data now flows through DataService
    ✅ Phone visibility toggle
    ✅ Chat enable/disable toggle
@@ -154,7 +154,7 @@ function renderListing(listing) {
     // ---- Parts / Gear & Accessories / Services ----
     const titleText = listing.title || "Listing";
     document.getElementById("listingTitle").textContent = titleText;
-    document.title = `${titleText} — Bike.X`;
+    document.title = `${titleText} — Bike X`;
 
     const priceDisplay = typeof formatPrice !== 'undefined' ? formatPrice(listing.price) : `SAR ${listing.price.toLocaleString()}`;
     document.getElementById("listingPrice").textContent = category === "services"
@@ -199,7 +199,7 @@ function renderListing(listing) {
     const titleParts = [listing.year, brandDisplay, listing.model].filter(Boolean);
     const titleText = titleParts.join(" ") || brandDisplay;
     document.getElementById("listingTitle").textContent = titleText;
-    document.title = `${titleText} — Bike.X`;
+    document.title = `${titleText} — Bike X`;
 
     const priceDisplay = typeof formatPrice !== 'undefined' ? formatPrice(listing.price) : `SAR ${listing.price.toLocaleString()}`;
     document.getElementById("listingPrice").textContent = priceDisplay;
