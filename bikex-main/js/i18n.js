@@ -1,5 +1,5 @@
 /* ===========================================================
-   Bike.X — i18n.js
+   Bike X — i18n.js
    Shared translation dictionary + language switching.
    =========================================================== */
 
@@ -82,8 +82,8 @@ const CITY_NAMES_AR = {
 
 const I18N = {
   en: {
-    titleHome: "Bike.X — Buy & sell motorcycles in Saudi Arabia",
-    titleSell: "Sell — Bike.X",
+    titleHome: "Bike X — Buy & sell motorcycles in Saudi Arabia",
+    titleSell: "Sell — Bike X",
     tagline: "motorcycles only",
     searchPlaceholder: "Search brand, model or city…",
     searchAria: "Search listings",
@@ -349,7 +349,7 @@ const I18N = {
     aboutTitle: "About Bike X",
     aboutSubtitle: "Saudi Arabia's dedicated motorcycle marketplace",
     aboutMission: "Our Mission",
-    aboutMissionText: "Bike.X was created to connect motorcycle enthusiasts across Saudi Arabia.",
+    aboutMissionText: "Bike X was created to connect motorcycle enthusiasts across Saudi Arabia.",
     aboutWhy: "Why Motorcycles Only?",
     aboutWhyText: "We're passionate about motorcycles. By focusing exclusively on motorcycles, we've built a platform that understands the unique needs of riders and sellers.",
     aboutUsers: "Happy riders",
@@ -362,7 +362,7 @@ const I18N = {
     valueLocalText: "Built specifically for the Saudi market.",
     valueSimple: "Simple & Fast",
     valueSimpleText: "No complicated processes.",
-    aboutTeam: "The Team Behind Bike.X",
+    aboutTeam: "The Team Behind Bike X",
     aboutTeamText: "We're a small team of motorcycle enthusiasts based in Saudi Arabia.",
     aboutJoin: "Ready to join the community?",
     browseListings: "Browse Listings",
@@ -389,7 +389,7 @@ const I18N = {
     faq4q: "What if I have a problem with a listing?",
     faq4a: "You can report any suspicious or problematic listings by contacting us directly via the form above or through WhatsApp.",
 
-    listingTitle: "Listing — Bike.X",
+    listingTitle: "Listing — Bike X",
     loadingListing: "Loading listing...",
     description: "Description",
     comments: "Comments",
