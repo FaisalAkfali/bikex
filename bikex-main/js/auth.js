@@ -1,5 +1,5 @@
 /* ===========================================================
-   Bike.X — auth.js (REFACTORED to use DataService)
+   Bike X — auth.js (REFACTORED to use DataService)
    =========================================================== */
 
 function ensureSeedUser(){
