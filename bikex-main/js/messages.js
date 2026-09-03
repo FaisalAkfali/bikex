@@ -1,5 +1,5 @@
 /* ===========================================================
-   Bike.X — messages.js (COMPLETE REFACTORED)
+   Bike X — messages.js (COMPLETE REFACTORED)
    All data flows through DataService
    WhatsApp-style read receipts (✓, ✓✓, ✓✓ blue)
    =========================================================== */
