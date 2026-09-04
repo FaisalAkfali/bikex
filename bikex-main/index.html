@@ -174,9 +174,12 @@
     </div>
     <div class="filter-group">
       <label data-i18n="priceRangeLabel">Price range (SAR)</label>
-      <div class="range-row">
-        <input type="number" id="minPrice" data-i18n-placeholder="minPlaceholder" placeholder="Min" min="0">
-        <input type="number" id="maxPrice" data-i18n-placeholder="maxPlaceholder" placeholder="Max" min="0">
+      <div class="price-range-grid" id="priceRangeGrid">
+        <button class="price-tab active" data-price="all" data-i18n="allPrices">All prices</button>
+        <button class="price-tab" data-price="under_5000" data-i18n="priceUnder5000">Under 5,000 SAR</button>
+        <button class="price-tab" data-price="5000_to_20000" data-i18n="price5000to20000">5,000 – 20,000 SAR</button>
+        <button class="price-tab" data-price="20000_to_50000" data-i18n="price20000to50000">20,000 – 50,000 SAR</button>
+        <button class="price-tab" data-price="over_50000" data-i18n="priceOver50000">Over 50,000 SAR</button>
       </div>
     </div>
     <button class="btn" id="favToggle" data-i18n="savedOnly">♥ Saved only</button>
