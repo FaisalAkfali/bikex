@@ -75,7 +75,7 @@ const fmtKm = n => n.toLocaleString("en-US").padStart(6,"0");
 
 /* ---------- Rendering ---------- */
 let state = {
-  search:"", brand:"", region:"", city:"", condition:"", minPrice:"", maxPrice:"",
+  search:"", brand:"", region:"", city:"", condition:"", priceRange:"all",
   sort:"newest", onlyFavorites:false, category:"motorcycles"
 };
 
@@ -84,21 +84,35 @@ function applyFilters(listings){
   return listings.filter(l => {
     if(state.category && (l.category || "motorcycles") !== state.category) return false;
     if(state.onlyFavorites && !favs.includes(l.id)) return false;
-    // ---- region filter ----
     if (state.region) {
       const citiesInRegion = getCitiesForRegion(state.region);
       if (!citiesInRegion.includes(l.city)) return false;
     }
-    // ---- city filter (narrower) ----
     if (state.city && l.city !== state.city) return false;
-    // ---- brand filter (only for motorcycles) ----
     if (state.category === "motorcycles" && state.brand && l.brand !== state.brand) return false;
-    // ---- condition (skip for services) ----
     if (state.category !== "services" && state.condition && l.condition !== state.condition) return false;
-    // ---- price ----
-    if (state.minPrice && l.price < Number(state.minPrice)) return false;
-    if (state.maxPrice && l.price > Number(state.maxPrice)) return false;
-    // ---- search ----
+    
+    // ---- price range filter (dropdown) ----
+    if (state.priceRange && state.priceRange !== 'all') {
+      const price = l.price || 0;
+      switch(state.priceRange) {
+        case 'under_5000':
+          if (price >= 5000) return false;
+          break;
+        case '5000_to_20000':
+          if (price < 5000 || price > 20000) return false;
+          break;
+        case '20000_to_50000':
+          if (price < 20000 || price > 50000) return false;
+          break;
+        case 'over_50000':
+          if (price <= 50000) return false;
+          break;
+        default:
+          break;
+      }
+    }
+    
     if (state.search){
       const q = state.search.toLowerCase();
       const hay = `${l.brand||""} ${l.model||""} ${l.title||""} ${l.subtitle||""} ${l.city} ${l.year||""}`.toLowerCase();
@@ -381,7 +395,7 @@ function openListing(id) {
   window.location.href = `listing.html?id=${id}`;
 }
 
-/* ---------- POPULATE FILTER OPTIONS (UPDATED: City empty until region selected) ---------- */
+/* ---------- POPULATE FILTER OPTIONS ---------- */
 function populateFilterOptions(){
   const regionSel = document.getElementById("filterRegion");
   const citySel = document.getElementById("filterCity");
@@ -403,7 +417,6 @@ function populateFilterOptions(){
     if (regionId) {
       const cities = getCitiesForRegion(regionId);
       // Clear and add "All cities" + cities
-      citySel.innerHTML = `<option value="" data-i18n="allCities">${t("allCities")}</option>`;
       cities.forEach(c => {
         const displayName = cityLabel(c);
         citySel.insertAdjacentHTML("beforeend", `<option value="${c}">${displayName}</option>`);
@@ -577,23 +590,29 @@ function wireEvents(){
       renderGrid(); 
     });
   }
-  
-  const minPrice = document.getElementById("minPrice");
-  if (minPrice) {
-    minPrice.addEventListener("input", function(e) { 
-      state.minPrice = e.target.value; 
-      renderGrid(); 
+
+  // ---- PRICE RANGE GRID (replaces dropdown) ----
+  const priceGrid = document.getElementById("priceRangeGrid");
+  if (priceGrid) {
+    // Set initial active state based on state.priceRange
+    priceGrid.querySelectorAll(".price-tab").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.price === state.priceRange);
+    });
+
+    priceGrid.addEventListener("click", function(e) {
+      const btn = e.target.closest(".price-tab");
+      if (!btn) return;
+      const price = btn.dataset.price;
+      if (!price) return;
+
+      // update state
+      state.priceRange = price;
+      // toggle active class
+      priceGrid.querySelectorAll(".price-tab").forEach(b => b.classList.toggle("active", b.dataset.price === price));
+      renderGrid();
     });
   }
-  
-  const maxPrice = document.getElementById("maxPrice");
-  if (maxPrice) {
-    maxPrice.addEventListener("input", function(e) { 
-      state.maxPrice = e.target.value; 
-      renderGrid(); 
-    });
-  }
-  
+
   const sortSelect = document.getElementById("sortSelect");
   if (sortSelect) {
     sortSelect.addEventListener("change", function(e) { 
@@ -605,40 +624,45 @@ function wireEvents(){
   const clearFilters = document.getElementById("clearFilters");
   if (clearFilters) {
     clearFilters.addEventListener("click", function() {
-      // Reset state (keep onlyFavorites and category)
+      // Reset all filter states
       state = { 
-        search:"", brand:"", region:"", city:"", condition:"", minPrice:"", maxPrice:"", 
+        search:"", brand:"", region:"", city:"", condition:"", priceRange:"all", 
         sort:"newest", onlyFavorites:state.onlyFavorites, category:state.category 
       };
+
       // Reset search input
       const searchInput = document.getElementById("searchInput");
       if (searchInput) searchInput.value = "";
-      // Reset brand tiles
+
+      // Reset brand grid
       const brandGridEl = document.getElementById("brandGrid");
       if (brandGridEl) {
         brandGridEl.querySelectorAll(".brand-tile").forEach(t => t.classList.toggle("active", t.dataset.brand === ""));
       }
-      // Reset region and city dropdowns
+
+      // Reset region + city
       const regionSel = document.getElementById("filterRegion");
       const citySel = document.getElementById("filterCity");
       if (regionSel) regionSel.value = "";
       if (citySel) {
-        // Reset city to only "All cities" option
         citySel.innerHTML = `<option value="" data-i18n="allCities">${t("allCities")}</option>`;
         citySel.value = "";
       }
+
       // Reset condition
       const filterConditionEl = document.getElementById("filterCondition");
       if (filterConditionEl) filterConditionEl.value = "";
-      // Reset prices
-      const minPriceEl = document.getElementById("minPrice");
-      if (minPriceEl) minPriceEl.value = "";
-      const maxPriceEl = document.getElementById("maxPrice");
-      if (maxPriceEl) maxPriceEl.value = "";
+      
+      // Reset price grid
+      const priceGrid = document.getElementById("priceRangeGrid");
+      if (priceGrid) {
+        priceGrid.querySelectorAll(".price-tab").forEach(b => b.classList.toggle("active", b.dataset.price === "all"));
+      }
+
       // Reset sort
       const sortSelectEl = document.getElementById("sortSelect");
       if (sortSelectEl) sortSelectEl.value = "newest";
-      // Re-render
+
       renderGrid();
     });
   }
